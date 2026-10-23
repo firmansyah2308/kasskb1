@@ -103,7 +103,7 @@
         <div class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 uppercase tracking-widest">
           Sistem Keuangan & Kas
         </div>
-        <p class="text-xs text-slate-500 dark:text-slate-400 pt-1.5 leading-relaxed">Masukkan Username & Password akun Anda untuk mengakses sistem akuntansi</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 pt-1.5 leading-relaxed">Selamat datang di aplikasi keuangan terpadu kelompok. Masukkan Username & Password akun Anda untuk mengakses.</p>
       </div>
 
       <form onsubmit="handleFrontLogin(event)" class="space-y-4 text-left">
@@ -1168,31 +1168,9 @@
             <span id="saveChangePassBtnText">Simpan Password</span>
           </button>
         </div>
-      </form>
-
-    </div>
-  </div>
-
-  <!-- Toast Notification -->
-  <div id="toastSuccess" class="hidden fixed bottom-6 right-6 z-50 bg-slate-900/90 dark:bg-emerald-950/90 backdrop-blur-md text-white border border-emerald-500/40 p-4 rounded-2xl text-xs font-semibold shadow-2xl flex items-center justify-between space-x-3 max-w-md">
-    <span class="flex items-center gap-2.5">
-      <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
-      <span id="toastMsg">Transaksi berhasil disimpan!</span>
-    </span>
-    <button onclick="document.getElementById('toastSuccess').classList.add('hidden')" class="text-slate-400 hover:text-white">
-      <i class="fa-solid fa-xmark"></i>
-    </button>
-  </div>
-
-  <!-- Delete Confirm Modal -->
-  <div id="confirmModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
-    <div class="bg-white dark:bg-[#111c38] rounded-3xl max-w-sm w-full p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5 text-center">
-      <div class="w-14 h-14 bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center text-2xl mx-auto shadow-inner border border-rose-200 dark:border-rose-900">
-        <i class="fa-solid fa-trash-can"></i>
-      </div>
-      <div>
-        <h3 class="font-extrabold text-base text-slate-900 dark:text-white">Konfirmasi Hapus Transaksi</h3>
-        <p id="confirmModalMsg" class="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+      <div class="space-y-5 text-center">
+        <h3 class="text-base font-extrabold text-slate-900 dark:text-white">Konfirmasi Hapus Transaksi</h3>
+        <p id="confirmModalMsg" class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
           Apakah Anda yakin ingin menghapus transaksi ini?
         </p>
       </div>
@@ -1204,6 +1182,28 @@
           Hapus Data
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- MAX LOGIN ATTEMPTS EXCEEDED MODAL -->
+  <div id="maxLoginAttemptsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
+    <div class="bg-white dark:bg-[#111c38] rounded-3xl max-w-sm w-full p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5 text-center relative overflow-hidden">
+      <div class="w-16 h-16 bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center text-3xl mx-auto shadow-inner border border-rose-200 dark:border-rose-900">
+        <i class="fa-solid fa-user-lock"></i>
+      </div>
+      <div class="space-y-2">
+        <h3 class="font-extrabold text-lg text-slate-900 dark:text-white">Akses Login Terkunci</h3>
+        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+          Anda telah gagal melakukan login sebanyak <strong class="text-rose-600 dark:text-rose-400">3 kali</strong>.
+        </p>
+        <div class="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 rounded-2xl text-xs text-amber-800 dark:text-amber-300 font-semibold text-left space-y-1">
+          <p class="font-bold flex items-center gap-1.5"><i class="fa-solid fa-circle-info text-amber-600"></i> Lupa Password?</p>
+          <p class="text-[11px] font-normal text-slate-600 dark:text-slate-300">Jika Anda lupa password, silakan hubungi <strong>Admin Keuangan Kelompok</strong> untuk melakukan reset password akun Anda.</p>
+        </div>
+      </div>
+      <button type="button" onclick="closeMaxLoginAttemptsModal()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white rounded-2xl text-xs font-bold transition-all shadow-md">
+        Saya Mengerti
+      </button>
     </div>
   </div>
 
@@ -1262,6 +1262,9 @@
     let currentPassword = "";
     let allowedTabs = [];
     let activeTab = "summary";
+
+    let failedLoginAttempts = 0;
+    const MAX_LOGIN_ATTEMPTS = 3;
 
     let editingTxId = null;
     let pendingDeleteId = null;
@@ -1448,6 +1451,11 @@
       if (modal) modal.classList.add('hidden');
     }
 
+    function closeMaxLoginAttemptsModal() {
+      const modal = document.getElementById('maxLoginAttemptsModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
     async function handleChangePasswordSubmit(e) {
       if (e && e.preventDefault) e.preventDefault();
 
@@ -1523,6 +1531,12 @@
       const loginBtn = document.getElementById('frontLoginBtn');
       const loginBtnText = document.getElementById('frontLoginBtnText');
 
+      if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS) {
+        const maxModal = document.getElementById('maxLoginAttemptsModal');
+        if (maxModal) maxModal.classList.remove('hidden');
+        return false;
+      }
+
       const username = userInput ? userInput.value.trim().toLowerCase() : '';
       const pwd = pwdInput ? pwdInput.value.trim() : '';
 
@@ -1582,12 +1596,24 @@
       }
 
       if (!authenticatedUser) {
-        if (errorText) errorText.textContent = "Username atau Password salah! Silakan periksa kembali.";
-        if (errorMsg) errorMsg.classList.remove('hidden');
+        failedLoginAttempts++;
+
+        if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS) {
+          if (errorMsg) errorMsg.classList.add('hidden');
+          const maxModal = document.getElementById('maxLoginAttemptsModal');
+          if (maxModal) maxModal.classList.remove('hidden');
+        } else {
+          if (errorText) errorText.textContent = "Username atau Password salah!";
+          if (errorMsg) errorMsg.classList.remove('hidden');
+        }
+
         if (loginBtn) loginBtn.disabled = false;
         if (loginBtnText) loginBtnText.textContent = "Masuk Aplikasi";
         return false;
       }
+
+      // Successful login reset attempt counter
+      failedLoginAttempts = 0;
 
       currentAccountUser = authenticatedUser.user;
       currentPassword = authenticatedUser.password;
