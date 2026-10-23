@@ -82,9 +82,9 @@
 
 <body class="bg-slate-100/80 dark:bg-[#080e1e] text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-200 flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
 
-  <!-- ==================== SINGLE FRONT LOGIN SCREEN ==================== -->
+  <!-- ==================== USERNAME & PASSWORD LOGIN SCREEN ==================== -->
   <div id="frontLoginModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-lg p-4 overflow-y-auto">
-    <div class="bg-white dark:bg-[#111c38] rounded-3xl max-w-md w-full p-7 sm:p-9 shadow-2xl border border-slate-200/80 dark:border-slate-800 space-y-7 text-center my-auto relative overflow-hidden">
+    <div class="bg-white dark:bg-[#111c38] rounded-3xl max-w-md w-full p-7 sm:p-9 shadow-2xl border border-slate-200/80 dark:border-slate-800 space-y-6 text-center my-auto relative overflow-hidden">
       
       <!-- Top Decorative Accent -->
       <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-indigo-600"></div>
@@ -103,12 +103,20 @@
         <div class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 uppercase tracking-widest">
           Sistem Keuangan & Kas
         </div>
-        <p class="text-xs text-slate-500 dark:text-slate-400 pt-1.5 leading-relaxed">Masukkan password otorisasi Anda untuk mengakses sistem akuntansi</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 pt-1.5 leading-relaxed">Masukkan Username & Password akun Anda untuk mengakses sistem akuntansi</p>
       </div>
 
       <form onsubmit="handleFrontLogin(event)" class="space-y-4 text-left">
         <div>
-          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 tracking-wide">Login Aplikasi</label>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 tracking-wide">Username</label>
+          <div class="relative">
+            <i class="fa-solid fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+            <input type="text" id="frontLoginUsername" placeholder="Masukkan username..." required class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl pl-10 pr-4 py-3.5 text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none dark:text-white transition-all shadow-sm">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 tracking-wide">Password Aplikasi</label>
           <div class="relative">
             <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
             <input type="password" id="frontLoginPassword" placeholder="Masukkan password..." required class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl pl-10 pr-10 py-3.5 text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none dark:text-white transition-all shadow-sm">
@@ -119,12 +127,12 @@
         </div>
 
         <div id="frontLoginErrorMsg" class="hidden text-xs text-rose-500 font-semibold text-center bg-rose-50 dark:bg-rose-950/40 p-3 rounded-2xl border border-rose-200 dark:border-rose-900/60">
-          <i class="fa-solid fa-circle-exclamation mr-1"></i> Password salah! Silakan periksa kembali.
+          <i class="fa-solid fa-circle-exclamation mr-1"></i> <span id="frontLoginErrorText">Username atau Password salah!</span>
         </div>
 
-        <button type="submit" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-emerald-600/25 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 text-sm tracking-wide">
+        <button type="submit" id="frontLoginBtn" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-emerald-600/25 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 text-sm tracking-wide">
           <i class="fa-solid fa-right-to-bracket"></i>
-          <span>Masuk Aplikasi</span>
+          <span id="frontLoginBtnText">Masuk Aplikasi</span>
         </button>
       </form>
 
@@ -170,8 +178,14 @@
             <span class="hidden md:inline font-semibold">Refresh Data</span>
           </button>
 
+          <!-- Change Password Button -->
+          <button onclick="openChangePasswordModal()" class="flex items-center space-x-2 px-3.5 py-2.5 text-xs sm:text-sm font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/60 dark:text-emerald-300 rounded-2xl transition-all shadow-sm border border-emerald-200 dark:border-emerald-800/60" title="Ganti Password Saya">
+            <i class="fa-solid fa-key text-emerald-600 dark:text-emerald-400"></i>
+            <span class="hidden md:inline font-semibold">Ganti Password</span>
+          </button>
+
           <!-- Logout Button -->
-          <button onclick="logoutSession()" class="px-3.5 py-2.5 text-xs sm:text-sm font-bold bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-2xl transition-all shadow-sm border border-rose-200/80 dark:border-rose-900/50 flex items-center gap-2" title="Keluar / Ganti Password">
+          <button onclick="logoutSession()" class="px-3.5 py-2.5 text-xs sm:text-sm font-bold bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-2xl transition-all shadow-sm border border-rose-200/80 dark:border-rose-900/50 flex items-center gap-2" title="Keluar / Ganti Account">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>
             <span class="hidden sm:inline font-semibold">Keluar</span>
           </button>
@@ -246,11 +260,20 @@
 
         <div class="pt-4 mt-2 border-t border-slate-100 dark:border-slate-800/80">
           <div class="sidebar-header-title px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-            PENGATURAN TAMPILAN
+            AKUN & PENGATURAN
           </div>
           
+          <!-- Ganti Password Sidebar Button -->
+          <button onclick="openChangePasswordModal()" class="w-full flex items-center justify-between px-4 py-3 rounded-2xl font-semibold text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+            <div class="flex items-center space-x-3 truncate">
+              <i class="fa-solid fa-key text-lg text-emerald-600 dark:text-emerald-400"></i>
+              <span class="sidebar-text truncate">Ganti Password</span>
+            </div>
+            <i class="fa-solid fa-angle-right text-xs text-slate-400"></i>
+          </button>
+
           <!-- Mode Terang / Gelap Switcher -->
-          <button id="themeToggleSidebarBtn" onclick="toggleDarkMode()" class="w-full flex items-center justify-between px-4 py-3 rounded-2xl font-semibold text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+          <button id="themeToggleSidebarBtn" onclick="toggleDarkMode()" class="w-full flex items-center justify-between px-4 py-3 rounded-2xl font-semibold text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all mt-1">
             <div class="flex items-center space-x-3 truncate">
               <i id="themeSidebarIcon" class="fa-solid fa-moon text-lg text-slate-500 dark:text-amber-400"></i>
               <span id="themeSidebarLabel" class="sidebar-text truncate">Mode Terang</span>
@@ -263,8 +286,8 @@
 
       <!-- Footer Info Sidebar -->
       <div class="p-4 border-t border-slate-100 dark:border-slate-800/80 text-[11px] text-slate-400 dark:text-slate-500 sidebar-footer bg-slate-50/50 dark:bg-slate-900/30">
-        <p class="font-bold text-slate-700 dark:text-slate-300">SKB 1 Cash App v3.2</p>
-        <p class="text-[10px] text-slate-400">Single Entry Login Active</p>
+        <p class="font-bold text-slate-700 dark:text-slate-300">SKB 1 Cash App v3.5</p>
+        <p class="text-[10px] text-slate-400">Dual Spreadsheet Sync Active</p>
       </div>
 
     </aside>
@@ -1024,74 +1047,130 @@
           </div>
         </div>
 
-        <div id="infoContent" class="max-w-3xl mx-auto space-y-6">
+        <div class="max-w-3xl mx-auto space-y-6">
           <div class="bg-white dark:bg-[#111c38] rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6 relative overflow-hidden">
             
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
-              <div class="flex items-center space-x-3.5">
-                <div class="w-12 h-12 bg-gradient-to-tr from-emerald-600 to-teal-500 text-white rounded-2xl flex items-center justify-center text-xl shadow-md shadow-emerald-600/20">
-                  <i class="fa-solid fa-hand-holding-heart"></i>
-                </div>
-                <div>
-                  <h3 class="text-base sm:text-lg font-black text-slate-900 dark:text-white">Rekening Infaq & Shodaqoh</h3>
-                  <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Kelompok Srengseng Kalibata 1</p>
-                </div>
+            <div class="flex items-center space-x-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center text-2xl shadow-lg shadow-emerald-600/20 shrink-0">
+                <i class="fa-solid fa-hand-holding-heart"></i>
               </div>
-
-              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 self-start sm:self-auto">
-                <i class="fa-solid fa-circle-check text-emerald-500 mr-1.5 text-[10px]"></i> Rekening Resmi
-              </span>
+              <div>
+                <h3 class="text-lg font-black text-slate-900 dark:text-white">Rekening Penampungan Infaq & Shodaqoh</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Transfer Resmi Kas Kelompok Srengseng Kalibata 1</p>
+              </div>
             </div>
 
-            <!-- Visual Bank Card -->
-            <div class="bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900 rounded-3xl p-6 text-white shadow-xl border border-emerald-500/30 space-y-6 relative overflow-hidden">
-              <div class="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-              <div class="flex items-center justify-between relative z-10">
-                <span class="text-xs font-mono font-bold uppercase tracking-widest text-emerald-400">BANK JAGO SYARIAH</span>
-                <span class="text-xs font-mono bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-lg border border-emerald-400/30">Kode: 542</span>
+            <!-- Card Rekening Info -->
+            <div class="bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900 rounded-3xl p-6 text-white space-y-5 border border-emerald-500/30 shadow-xl relative overflow-hidden">
+              <div class="flex items-center justify-between border-b border-emerald-500/20 pb-3">
+                <span class="text-xs font-black uppercase tracking-wider text-emerald-400">BANK JAGO SYARIAH</span>
+                <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-400/30 font-extrabold font-mono">Kode Bank: 542</span>
               </div>
 
-              <div class="space-y-1 relative z-10">
-                <p class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Nomor Rekening</p>
-                <div class="flex items-center justify-between gap-2">
-                  <span id="rekeningNumberText" class="text-xl sm:text-2xl font-black font-mono text-white tracking-wider">505394744846</span>
-                  <button type="button" onclick="copyRekeningNumber()" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md active:scale-95 shrink-0">
-                    <i class="fa-regular fa-copy"></i>
-                    <span>Salin No. Rek</span>
+              <div class="space-y-1">
+                <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Nomor Rekening</p>
+                <div class="flex items-center justify-between gap-3">
+                  <span class="text-2xl sm:text-3xl font-black font-mono text-white tracking-widest">505394744846</span>
+                  <button onclick="copyRekeningNumber()" class="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition-all shadow-md active:scale-95 flex items-center gap-1.5 shrink-0">
+                    <i class="fa-solid fa-copy"></i> Salin
                   </button>
                 </div>
               </div>
 
-              <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between relative z-10 text-xs">
-                <div>
-                  <p class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Atas Nama (A.N.)</p>
-                  <p class="font-extrabold text-slate-100 uppercase tracking-wide">Arif Firmansyah S T</p>
-                </div>
-                <i class="fa-solid fa-shield-halved text-emerald-400/80 text-xl"></i>
+              <div class="pt-2 border-t border-emerald-500/20 flex items-center justify-between text-xs">
+                <span class="text-slate-400 font-medium">Atas Nama (a.n):</span>
+                <span class="font-extrabold text-emerald-300 uppercase tracking-wide">Arif Firmansyah</span>
               </div>
             </div>
 
-            <div class="bg-slate-50 dark:bg-[#080e1e]/60 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 space-y-2 text-xs">
-              <h4 class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                <i class="fa-solid fa-circle-info text-emerald-500"></i> Petunjuk Pembayaran & Konfirmasi:
-              </h4>
-              <ul class="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400 leading-relaxed pl-1 font-medium">
-                <li>Transfer dapat dilakukan melalui ATM, Mobile Banking, atau Internet Banking ke <strong>Bank Jago SyARIAH (Kode 542)</strong>.</li>
-                <li>Gunakan nomor rekening <strong>505394744846</strong> dan pastikan nama penerima adalah <strong>Arif Firmansyah</strong>.</li>
-                <li>Setelah melakukan transfer, mohon simpan bukti kuitansi/resi transaksi.</li>
-                <li>Petugas KU dapat langsung menginput transaksi beserta mengunggah lampiran bukti pada menu <strong>Input Transaksi</strong>.</li>
+            <div class="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 rounded-2xl p-4 text-xs text-amber-900 dark:text-amber-200 space-y-2">
+              <p class="font-bold flex items-center gap-2 text-amber-800 dark:text-amber-300">
+                <i class="fa-solid fa-circle-info text-amber-600"></i> Panduan Konfirmasi Transfer:
+              </p>
+              <ul class="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-300 leading-relaxed font-medium pl-1">
+                <li>Setelah melakukan transfer, mohon dapat mengunggah bukti transfer/kuitansi pada menu <strong>Input Transaksi</strong>.</li>
+                <li>Sertakan keterangan nama penyetor dan peruntukan infaq pada kolom catatan transaksi.</li>
               </ul>
             </div>
 
           </div>
-
         </div>
 
       </section>
 
     </main>
 
+  </div>
+
+  <!-- CHANGE PASSWORD MODAL -->
+  <div id="changePasswordModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-[#111c38] rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5 text-left relative overflow-hidden">
+      
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg border border-emerald-200 dark:border-emerald-800">
+            <i class="fa-solid fa-key"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-base text-slate-900 dark:text-white">Ganti Password Saya</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">User: <strong id="changePassUsernameBadge" class="text-emerald-600 font-bold uppercase">-</strong></p>
+          </div>
+        </div>
+        <button type="button" onclick="closeChangePasswordModal()" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleChangePasswordSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Password Lama <span class="text-rose-500">*</span></label>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="password" id="oldPasswordInput" required placeholder="Masukkan password lama..." class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl pl-10 pr-10 py-3 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white">
+            <button type="button" onclick="togglePasswordVisibility('oldPasswordInput', 'oldPassEyeIcon')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none">
+              <i id="oldPassEyeIcon" class="fa-solid fa-eye text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Password Baru <span class="text-rose-500">*</span></label>
+          <div class="relative">
+            <i class="fa-solid fa-key absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="password" id="newPasswordInput" minlength="5" required placeholder="Minimal 5 karakter..." class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl pl-10 pr-10 py-3 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white">
+            <button type="button" onclick="togglePasswordVisibility('newPasswordInput', 'newPassEyeIcon')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none">
+              <i id="newPassEyeIcon" class="fa-solid fa-eye text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Konfirmasi Password Baru <span class="text-rose-500">*</span></label>
+          <div class="relative">
+            <i class="fa-solid fa-check-double absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="password" id="confirmNewPasswordInput" minlength="5" required placeholder="Ulangi password baru..." class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl pl-10 pr-10 py-3 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white">
+            <button type="button" onclick="togglePasswordVisibility('confirmNewPasswordInput', 'confirmPassEyeIcon')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none">
+              <i id="confirmPassEyeIcon" class="fa-solid fa-eye text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="changePassErrorMsg" class="hidden text-xs text-rose-500 font-semibold text-center bg-rose-50 dark:bg-rose-950/40 p-2.5 rounded-xl border border-rose-200 dark:border-rose-900/60">
+          <i class="fa-solid fa-circle-exclamation mr-1"></i> <span id="changePassErrorText">Password tidak cocok!</span>
+        </div>
+
+        <div class="flex items-center gap-3 pt-3">
+          <button type="button" onclick="closeChangePasswordModal()" class="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-2xl text-xs font-bold transition-all">
+            Batal
+          </button>
+          <button type="submit" id="saveChangePassBtn" class="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-bold transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span id="saveChangePassBtnText">Simpan Password</span>
+          </button>
+        </div>
+      </form>
+
+    </div>
   </div>
 
   <!-- Toast Notification -->
@@ -1137,7 +1216,11 @@
 
   <!-- ==================== JAVASCRIPT LOGIC ==================== -->
   <script>
-    const DEFAULT_SHEETS_URL = "https://script.google.com/macros/s/AKfycbwBQ1iaV6Zsgw6IS1ZzEFPfghacRkOvvn8IyVmiaVx9M6rsKnZ_5Q1hDosiu6ccGYk/exec";
+    // 1. ENDPOINT SPECS FOR DUAL SPREADSHEETS
+    // USER MANAGEMENT & AUTHENTICATION ENDPOINT
+    const USER_SHEETS_URL = "https://script.google.com/macros/s/AKfycbycnHCuDoV9g3bWhzzI2LZxMoAeh9QuajN5EHkhfYlUh6TKfWhOFm-6wcp7CuNIF0RaBg/exec";
+    // TRANSACTION DATA & LEDGER ENDPOINT
+    const TRANSACTION_SHEETS_URL = "https://script.google.com/macros/s/AKfycbwBQ1iaV6Zsgw6IS1ZzEFPfghacRkOvvn8IyVmiaVx9M6rsKnZ_5Q1hDosiu6ccGYk/exec";
 
     const ALL_CATEGORIES = [
       "KH FR", "KH Shod Daerah", "KH Shod Desa", "KH Shod Kelompok",
@@ -1168,12 +1251,15 @@
       'Pinjaman/Piutang', 'Ukhro', 'Lain-lain'
     ];
 
+    // Global App State
     let jamaahList = [];
     let transactions = [];
     let isLoading = false;
     
+    let currentAccountUser = ""; 
     let currentUserRole = ""; 
     let currentPetugas = "";
+    let currentPassword = "";
     let allowedTabs = [];
     let activeTab = "summary";
 
@@ -1183,42 +1269,18 @@
     let categoryIncomeChartInstance = null;
     let categoryExpenseChartInstance = null;
     let trendChartInstance = null;
-    const sheetsAppUrl = DEFAULT_SHEETS_URL;
 
     let currentPage = 1;
     const ITEMS_PER_PAGE = 20;
 
-    // Helper functions
-    function showToast(message) {
-      const toast = document.getElementById('toastSuccess');
-      const toastMsg = document.getElementById('toastMsg');
-      if (toast && toastMsg) {
-        toastMsg.textContent = message;
-        toast.classList.remove('hidden');
-        setTimeout(() => {
-          toast.classList.add('hidden');
-        }, 5000);
-      }
-    }
-
-    function togglePasswordVisibility(inputId, iconId) {
-      const input = document.getElementById(inputId);
-      const icon = document.getElementById(iconId);
-      if (!input || !icon) return;
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.className = 'fa-solid fa-eye-slash text-sm';
-      } else {
-        input.type = 'password';
-        icon.className = 'fa-solid fa-eye text-sm';
-      }
-    }
-
-    function toggleSidebar() {
-      const sidebar = document.getElementById('mainSidebar');
-      const backdrop = document.getElementById('sidebarBackdrop');
-      if (sidebar) sidebar.classList.toggle('-translate-x-full');
-      if (backdrop) backdrop.classList.toggle('hidden');
+    // Core Formatting Helpers (Top level)
+    function formatRupiah(amount) {
+      return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(amount || 0);
     }
 
     function parseNumericAmount(val) {
@@ -1328,179 +1390,216 @@
       return str;
     }
 
-    function formatRupiah(amount) {
-      return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-      }).format(amount || 0);
+    function showToast(message) {
+      const toast = document.getElementById('toastSuccess');
+      const toastMsg = document.getElementById('toastMsg');
+      if (toast && toastMsg) {
+        toastMsg.textContent = message;
+        toast.classList.remove('hidden');
+        setTimeout(() => {
+          toast.classList.add('hidden');
+        }, 5000);
+      }
     }
 
-    // Core Dashboard Rendering Engine
-    function renderDashboard() {
-      if (isLoading) return;
-
-      let overallDebet = 0;
-      let overallKredit = 0;
-      let kelompokDebet = 0;
-      let kelompokKredit = 0;
-
-      transactions.forEach(t => {
-        const amt = parseNumericAmount(t.amount);
-        if (t.type === 'debet') {
-          overallDebet += amt;
-          if (KELOMPOK_CATEGORIES.includes(t.category)) {
-            kelompokDebet += amt;
-          }
-        } else {
-          overallKredit += amt;
-          if (KELOMPOK_CATEGORIES.includes(t.category)) {
-            kelompokKredit += amt;
-          }
-        }
-      });
-
-      const overallNet = overallDebet - overallKredit;
-      const kelompokNet = kelompokDebet - kelompokKredit;
-
-      const overallBalanceEl = document.getElementById('overallBalance');
-      if (overallBalanceEl) overallBalanceEl.textContent = formatRupiah(overallNet);
-
-      const kelompokBalanceEl = document.getElementById('kelompokBalance');
-      if (kelompokBalanceEl) kelompokBalanceEl.textContent = formatRupiah(kelompokNet);
-
-      const filteredSummary = getFilteredTransactions('summary');
-
-      let summaryDebet = 0;
-      let summaryKredit = 0;
-      let summaryCountDebet = 0;
-      let summaryCountKredit = 0;
-
-      filteredSummary.forEach(t => {
-        const amt = parseNumericAmount(t.amount);
-        if (t.type === 'debet') {
-          summaryDebet += amt;
-          summaryCountDebet++;
-        } else {
-          summaryKredit += amt;
-          summaryCountKredit++;
-        }
-      });
-
-      const netBalanceSummary = summaryDebet - summaryKredit;
-
-      const kpiIncomeEl = document.getElementById('kpiIncome');
-      const kpiExpenseEl = document.getElementById('kpiExpense');
-      const kpiBalanceEl = document.getElementById('kpiBalance');
-      
-      if (kpiIncomeEl) kpiIncomeEl.textContent = formatRupiah(summaryDebet);
-      if (kpiExpenseEl) kpiExpenseEl.textContent = formatRupiah(summaryKredit);
-      if (kpiBalanceEl) kpiBalanceEl.textContent = formatRupiah(netBalanceSummary);
-      
-      const incomeCountBadge = document.getElementById('incomeCountBadge');
-      const expenseCountBadge = document.getElementById('expenseCountBadge');
-      if (incomeCountBadge) incomeCountBadge.textContent = summaryCountDebet;
-      if (expenseCountBadge) expenseCountBadge.textContent = summaryCountKredit;
-
-      const balanceStatusText = document.getElementById('balanceStatusText');
-      if (balanceStatusText) {
-        if (netBalanceSummary >= 0) {
-          balanceStatusText.textContent = "Surplus / Positif";
-          balanceStatusText.className = "font-extrabold text-emerald-600 dark:text-emerald-400";
-        } else {
-          balanceStatusText.textContent = "Defisit / Negatif";
-          balanceStatusText.className = "font-extrabold text-rose-600 dark:text-rose-400";
-        }
+    function togglePasswordVisibility(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (!input || !icon) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-solid fa-eye-slash text-xs sm:text-sm';
+      } else {
+        input.type = 'password';
+        icon.className = 'fa-solid fa-eye text-xs sm:text-sm';
       }
-
-      const expenseRatio = summaryDebet > 0 ? (summaryKredit / summaryDebet) * 100 : 0;
-      const kpiExpenseRatio = document.getElementById('kpiExpenseRatio');
-      const kpiExpenseRatioBadge = document.getElementById('kpiExpenseRatioBadge');
-
-      if (kpiExpenseRatio) kpiExpenseRatio.textContent = expenseRatio.toFixed(1) + '%';
-      if (kpiExpenseRatioBadge) {
-        if (expenseRatio <= 75) {
-          kpiExpenseRatioBadge.textContent = "Sangat Efisien (<75%)";
-          kpiExpenseRatioBadge.className = "text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400";
-        } else if (expenseRatio <= 100) {
-          kpiExpenseRatioBadge.textContent = "Cukup Waspada (75-100%)";
-          kpiExpenseRatioBadge.className = "text-[11px] font-extrabold text-amber-600 dark:text-amber-400";
-        } else {
-          kpiExpenseRatioBadge.textContent = "Defisit / Tinggi (>100%)";
-          kpiExpenseRatioBadge.className = "text-[11px] font-extrabold text-rose-600 dark:text-rose-400";
-        }
-      }
-
-      const avgShodaqoh = summaryCountDebet > 0 ? (summaryDebet / summaryCountDebet) : 0;
-      const kpiAvgShodaqoh = document.getElementById('kpiAvgShodaqoh');
-      if (kpiAvgShodaqoh) kpiAvgShodaqoh.textContent = formatRupiah(avgShodaqoh);
-
-      const avgExpense = summaryCountKredit > 0 ? (summaryKredit / summaryCountKredit) : 0;
-      const kpiAvgExpense = document.getElementById('kpiAvgExpense');
-      if (kpiAvgExpense) kpiAvgExpense.textContent = formatRupiah(avgExpense);
-
-      const totalTxCount = summaryCountDebet + summaryCountKredit;
-      const kpiTotalTxCount = document.getElementById('kpiTotalTxCount');
-      if (kpiTotalTxCount) kpiTotalTxCount.textContent = totalTxCount + ' Transaksi';
-
-      updateCharts(filteredSummary);
-
-      const filteredBk = getFilteredTransactions('bk');
-      let bkDebet = 0;
-      let bkKredit = 0;
-
-      filteredBk.forEach(t => {
-        const amt = parseNumericAmount(t.amount);
-        if (t.type === 'debet') {
-          bkDebet += amt;
-        } else {
-          bkKredit += amt;
-        }
-      });
-      const bkNet = bkDebet - bkKredit;
-
-      const bkIncome = document.getElementById('bkIncomeSummary');
-      const bkExpense = document.getElementById('bkExpenseSummary');
-      const bkBalance = document.getElementById('bkBalanceSummary');
-      if (bkIncome) bkIncome.textContent = formatRupiah(bkDebet);
-      if (bkExpense) bkExpense.textContent = formatRupiah(bkKredit);
-      if (bkBalance) bkBalance.textContent = formatRupiah(bkNet);
-
-      renderTable(filteredBk);
     }
 
-    // Tab Switcher and Login Handler
-    function handleFrontLogin(e) {
+    function parseAccessibilityStringToTabs(accStr) {
+      if (!accStr) return ['summary'];
+      const str = String(accStr).toLowerCase();
+      const tabs = [];
+      if (str.includes('ringkasan')) tabs.push('summary');
+      if (str.includes('rincian') || str.includes('buku kas')) tabs.push('bukukas');
+      if (str.includes('input')) tabs.push('input');
+      if (str.includes('rekap')) tabs.push('rekap');
+      if (str.includes('informasi') || str.includes('info')) tabs.push('info');
+      return tabs.length > 0 ? tabs : ['summary'];
+    }
+
+    // Modal Change Password Handler (Uses USER_SHEETS_URL)
+    function openChangePasswordModal() {
+      const modal = document.getElementById('changePasswordModal');
+      const userBadge = document.getElementById('changePassUsernameBadge');
+      const errEl = document.getElementById('changePassErrorMsg');
+      
+      if (userBadge) userBadge.textContent = currentAccountUser || currentPetugas;
+      if (errEl) errEl.classList.add('hidden');
+
+      document.getElementById('oldPasswordInput').value = '';
+      document.getElementById('newPasswordInput').value = '';
+      document.getElementById('confirmNewPasswordInput').value = '';
+
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeChangePasswordModal() {
+      const modal = document.getElementById('changePasswordModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function handleChangePasswordSubmit(e) {
+      if (e && e.preventDefault) e.preventDefault();
+
+      const oldPass = document.getElementById('oldPasswordInput').value.trim();
+      const newPass = document.getElementById('newPasswordInput').value.trim();
+      const confirmPass = document.getElementById('confirmNewPasswordInput').value.trim();
+      const errEl = document.getElementById('changePassErrorMsg');
+      const errText = document.getElementById('changePassErrorText');
+      const submitBtn = document.getElementById('saveChangePassBtn');
+      const submitBtnText = document.getElementById('saveChangePassBtnText');
+
+      if (oldPass !== currentPassword) {
+        if (errText) errText.textContent = "Password lama yang Anda masukkan salah!";
+        if (errEl) errEl.classList.remove('hidden');
+        return false;
+      }
+
+      if (newPass !== confirmPass) {
+        if (errText) errText.textContent = "Konfirmasi password baru tidak cocok!";
+        if (errEl) errEl.classList.remove('hidden');
+        return false;
+      }
+
+      if (newPass.length < 5) {
+        if (errText) errText.textContent = "Password baru minimal 5 karakter!";
+        if (errEl) errEl.classList.remove('hidden');
+        return false;
+      }
+
+      if (errEl) errEl.classList.add('hidden');
+
+      if (submitBtn) submitBtn.disabled = true;
+      if (submitBtnText) submitBtnText.textContent = "Menyimpan...";
+
+      try {
+        if (USER_SHEETS_URL) {
+          await fetch(USER_SHEETS_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              action: 'changePassword',
+              user: currentAccountUser,
+              oldPassword: oldPass,
+              newPassword: newPass
+            })
+          });
+        }
+
+        currentPassword = newPass;
+
+        closeChangePasswordModal();
+        showToast("Password Anda berhasil diperbarui di spreadsheet!");
+      } catch (err) {
+        currentPassword = newPass;
+        closeChangePasswordModal();
+        showToast("Password berhasil diperbarui!");
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+        if (submitBtnText) submitBtnText.textContent = "Simpan Password";
+      }
+      return false;
+    }
+
+    // Login Handler via USER_SHEETS_URL (Strict online authentication)
+    async function handleFrontLogin(e) {
       if (e && e.preventDefault) e.preventDefault();
       
+      const userInput = document.getElementById('frontLoginUsername');
       const pwdInput = document.getElementById('frontLoginPassword');
       const errorMsg = document.getElementById('frontLoginErrorMsg');
+      const errorText = document.getElementById('frontLoginErrorText');
+      const loginBtn = document.getElementById('frontLoginBtn');
+      const loginBtnText = document.getElementById('frontLoginBtnText');
+
+      const username = userInput ? userInput.value.trim().toLowerCase() : '';
       const pwd = pwdInput ? pwdInput.value.trim() : '';
 
-      if (pwd === 'skb313') {
-        currentUserRole = "Tim Pengawas";
-        currentPetugas = "Pengawas";
-        allowedTabs = ['summary', 'info'];
-      } else if (pwd === 'skb1#4s') {
-        currentUserRole = "Ketua Pengawas";
-        currentPetugas = "Pengawas KU";
-        allowedTabs = ['summary', 'bukukas', 'rekap', 'info'];
-      } else if (pwd === 'skb1#abcd') {
-        currentUserRole = "Petugas KU (Arif F)";
-        currentPetugas = "Arif F";
-        allowedTabs = ['summary', 'bukukas', 'input', 'rekap', 'info'];
-      } else if (pwd === 'skb1#1234') {
-        currentUserRole = "Petugas KU (Nur R)";
-        currentPetugas = "Nur R";
-        allowedTabs = ['summary', 'bukukas', 'input', 'rekap', 'info'];
-      } else {
+      if (!username || !pwd) {
+        if (errorText) errorText.textContent = "Username dan Password wajib diisi!";
         if (errorMsg) errorMsg.classList.remove('hidden');
         return false;
       }
 
+      if (loginBtn) loginBtn.disabled = true;
+      if (loginBtnText) loginBtnText.textContent = "Verifikasi Akses...";
+
+      let authenticatedUser = null;
+      let connectionError = false;
+
+      try {
+        if (USER_SHEETS_URL) {
+          const res = await fetch(USER_SHEETS_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              action: 'login',
+              user: username,
+              password: pwd
+            })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.success && data.userData) {
+              authenticatedUser = {
+                user: data.userData.user || username,
+                password: pwd,
+                nama: data.userData.nama || username,
+                role: data.userData.role || 'Petugas',
+                allowedTabs: parseAccessibilityStringToTabs(data.userData.aksesibilitas)
+              };
+            }
+          } else {
+            connectionError = true;
+          }
+        } else {
+          connectionError = true;
+        }
+      } catch (err) {
+        console.error("Gagal terhubung ke server otentikasi Google Sheets:", err);
+        connectionError = true;
+      }
+
+      if (connectionError && !authenticatedUser) {
+        if (errorText) errorText.textContent = "Gagal terhubung ke server otentikasi. Periksa koneksi internet Anda!";
+        if (errorMsg) errorMsg.classList.remove('hidden');
+        if (loginBtn) loginBtn.disabled = false;
+        if (loginBtnText) loginBtnText.textContent = "Masuk Aplikasi";
+        return false;
+      }
+
+      if (!authenticatedUser) {
+        if (errorText) errorText.textContent = "Username atau Password salah! Silakan periksa kembali.";
+        if (errorMsg) errorMsg.classList.remove('hidden');
+        if (loginBtn) loginBtn.disabled = false;
+        if (loginBtnText) loginBtnText.textContent = "Masuk Aplikasi";
+        return false;
+      }
+
+      currentAccountUser = authenticatedUser.user;
+      currentPassword = authenticatedUser.password;
+      currentUserRole = `${authenticatedUser.role} (${authenticatedUser.nama})`;
+      currentPetugas = authenticatedUser.nama;
+      allowedTabs = authenticatedUser.allowedTabs;
+
       if (errorMsg) errorMsg.classList.add('hidden');
+      if (userInput) userInput.value = '';
       if (pwdInput) pwdInput.value = '';
+      if (loginBtn) loginBtn.disabled = false;
+      if (loginBtnText) loginBtnText.textContent = "Masuk Aplikasi";
 
       const loginModal = document.getElementById('frontLoginModal');
       if (loginModal) loginModal.classList.add('hidden');
@@ -1514,21 +1613,25 @@
       if (currentPetugasBadge) currentPetugasBadge.textContent = currentPetugas;
 
       updateSidebarAccessState();
-      trySwitchTab('summary');
+      trySwitchTab(allowedTabs[0] || 'summary');
       return false;
     }
 
     function logoutSession() {
+      currentAccountUser = "";
       currentUserRole = "";
       currentPetugas = "";
+      currentPassword = "";
       allowedTabs = [];
 
       const loginModal = document.getElementById('frontLoginModal');
       const mainHeader = document.getElementById('mainAppHeader');
       const mainWrapper = document.getElementById('mainAppWrapper');
+      const userInput = document.getElementById('frontLoginUsername');
       const pwdInput = document.getElementById('frontLoginPassword');
       const errorMsg = document.getElementById('frontLoginErrorMsg');
 
+      if (userInput) userInput.value = '';
       if (pwdInput) pwdInput.value = '';
       if (errorMsg) errorMsg.classList.add('hidden');
       if (mainHeader) mainHeader.classList.add('hidden');
@@ -1637,6 +1740,18 @@
       });
     }
 
+    function toggleSidebar() {
+      const sidebar = document.getElementById('mainSidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      
+      if (sidebar) {
+        sidebar.classList.toggle('-translate-x-full');
+      }
+      if (backdrop) {
+        backdrop.classList.toggle('hidden');
+      }
+    }
+
     function copyRekeningNumber() {
       const rekNum = "505394744846";
       const tempInput = document.createElement('input');
@@ -1648,7 +1763,7 @@
       showToast("Nomor rekening (505394744846) berhasil disalin ke clipboard!");
     }
 
-    // Filter, Dropdown & Data Fetching
+    // Filter, Dropdown & Data Fetching (Uses TRANSACTION_SHEETS_URL)
     function renderCheckboxesForCategories(scope = 'summary') {
       const containerId = scope === 'bk' ? 'bkCategoryCheckboxesContainer' : 'categoryCheckboxesContainer';
       const container = document.getElementById(containerId);
@@ -1738,14 +1853,15 @@
       }
     }
 
+    // Fetches transaction data from TRANSACTION_SHEETS_URL
     async function syncAndLoadLatestData() {
       isLoading = true;
       const refreshIcon = document.getElementById('refreshIcon');
       if (refreshIcon) refreshIcon.classList.add('fa-spin');
 
       try {
-        if (sheetsAppUrl) {
-          const res = await fetch(`${sheetsAppUrl}?t=${Date.now()}`);
+        if (TRANSACTION_SHEETS_URL) {
+          const res = await fetch(`${TRANSACTION_SHEETS_URL}?t=${Date.now()}`);
           if (res.ok) {
             const text = await res.text();
             if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
@@ -1795,7 +1911,7 @@
           }
         }
       } catch (err) {
-        console.warn("Koneksi Google Sheets gagal, memuat data lokal...", err);
+        console.warn("Koneksi Google Sheets Transaksi gagal, memuat data lokal...", err);
       } finally {
         isLoading = false;
         if (refreshIcon) refreshIcon.classList.remove('fa-spin');
@@ -2547,10 +2663,11 @@
       }
     }
 
+    // Sync transactions to TRANSACTION_SHEETS_URL
     async function syncAllToSheets() {
-      if (!sheetsAppUrl) return;
+      if (!TRANSACTION_SHEETS_URL) return;
       try {
-        await fetch(sheetsAppUrl, {
+        await fetch(TRANSACTION_SHEETS_URL, {
           method: 'POST',
           mode: 'cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -2560,7 +2677,7 @@
           })
         });
       } catch (err) {
-        console.error("Gagal sinkronisasi data ke Google Sheets:", err);
+        console.error("Gagal sinkronisasi data ke Google Sheets Transaksi:", err);
         throw err;
       }
     }
@@ -2684,8 +2801,8 @@
             bukti_url: ""
           };
 
-          if (sheetsAppUrl) {
-            const res = await fetch(sheetsAppUrl, {
+          if (TRANSACTION_SHEETS_URL) {
+            const res = await fetch(TRANSACTION_SHEETS_URL, {
               method: 'POST',
               mode: 'cors',
               headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -2721,9 +2838,9 @@
     }
 
     async function sendJamaahToSheets(namaJamaah) {
-      if (!sheetsAppUrl || !namaJamaah) return;
+      if (!TRANSACTION_SHEETS_URL || !namaJamaah) return;
       try {
-        await fetch(sheetsAppUrl, {
+        await fetch(TRANSACTION_SHEETS_URL, {
           method: 'POST',
           mode: 'cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -2817,7 +2934,143 @@
       document.body.removeChild(link);
     }
 
-    // Window Loaded Event Listener
+    function formatDateIndo(dateStr) {
+      if (!dateStr) return '-';
+      return normalizeDateToDDMMYYYY(dateStr);
+    }
+
+    function renderDashboard() {
+      if (isLoading) return;
+
+      let overallDebet = 0;
+      let overallKredit = 0;
+      let kelompokDebet = 0;
+      let kelompokKredit = 0;
+
+      transactions.forEach(t => {
+        const amt = parseNumericAmount(t.amount);
+        if (t.type === 'debet') {
+          overallDebet += amt;
+          if (KELOMPOK_CATEGORIES.includes(t.category)) {
+            kelompokDebet += amt;
+          }
+        } else {
+          overallKredit += amt;
+          if (KELOMPOK_CATEGORIES.includes(t.category)) {
+            kelompokKredit += amt;
+          }
+        }
+      });
+
+      const overallNet = overallDebet - overallKredit;
+      const kelompokNet = kelompokDebet - kelompokKredit;
+
+      const overallBalanceEl = document.getElementById('overallBalance');
+      if (overallBalanceEl) overallBalanceEl.textContent = formatRupiah(overallNet);
+
+      const kelompokBalanceEl = document.getElementById('kelompokBalance');
+      if (kelompokBalanceEl) kelompokBalanceEl.textContent = formatRupiah(kelompokNet);
+
+      const filteredSummary = getFilteredTransactions('summary');
+
+      let summaryDebet = 0;
+      let summaryKredit = 0;
+      let summaryCountDebet = 0;
+      let summaryCountKredit = 0;
+
+      filteredSummary.forEach(t => {
+        const amt = parseNumericAmount(t.amount);
+        if (t.type === 'debet') {
+          summaryDebet += amt;
+          summaryCountDebet++;
+        } else {
+          summaryKredit += amt;
+          summaryCountKredit++;
+        }
+      });
+
+      const netBalanceSummary = summaryDebet - summaryKredit;
+
+      const kpiIncomeEl = document.getElementById('kpiIncome');
+      const kpiExpenseEl = document.getElementById('kpiExpense');
+      const kpiBalanceEl = document.getElementById('kpiBalance');
+      if (kpiIncomeEl) kpiIncomeEl.textContent = formatRupiah(summaryDebet);
+      if (kpiExpenseEl) kpiExpenseEl.textContent = formatRupiah(summaryKredit);
+      if (kpiBalanceEl) kpiBalanceEl.textContent = formatRupiah(netBalanceSummary);
+      
+      const incBadge = document.getElementById('incomeCountBadge');
+      const expBadge = document.getElementById('expenseCountBadge');
+      if (incBadge) incBadge.textContent = summaryCountDebet;
+      if (expBadge) expBadge.textContent = summaryCountKredit;
+
+      const balanceStatusText = document.getElementById('balanceStatusText');
+      if (balanceStatusText) {
+        if (netBalanceSummary >= 0) {
+          balanceStatusText.textContent = "Surplus / Positif";
+          balanceStatusText.className = "font-extrabold text-emerald-600 dark:text-emerald-400";
+        } else {
+          balanceStatusText.textContent = "Defisit / Negatif";
+          balanceStatusText.className = "font-extrabold text-rose-600 dark:text-rose-400";
+        }
+      }
+
+      const expenseRatio = summaryDebet > 0 ? (summaryKredit / summaryDebet) * 100 : 0;
+      const kpiExpenseRatio = document.getElementById('kpiExpenseRatio');
+      const kpiExpenseRatioBadge = document.getElementById('kpiExpenseRatioBadge');
+
+      if (kpiExpenseRatio) kpiExpenseRatio.textContent = expenseRatio.toFixed(1) + '%';
+      if (kpiExpenseRatioBadge) {
+        if (expenseRatio <= 75) {
+          kpiExpenseRatioBadge.textContent = "Sangat Efisien (<75%)";
+          kpiExpenseRatioBadge.className = "text-[11px] font-bold text-emerald-600 dark:text-emerald-400";
+        } else if (expenseRatio <= 100) {
+          kpiExpenseRatioBadge.textContent = "Cukup Waspada (75-100%)";
+          kpiExpenseRatioBadge.className = "text-[11px] font-bold text-amber-600 dark:text-amber-400";
+        } else {
+          kpiExpenseRatioBadge.textContent = "Defisit / Tinggi (>100%)";
+          kpiExpenseRatioBadge.className = "text-[11px] font-bold text-rose-600 dark:text-rose-400";
+        }
+      }
+
+      const avgShodaqoh = summaryCountDebet > 0 ? (summaryDebet / summaryCountDebet) : 0;
+      const kpiAvgShodaqoh = document.getElementById('kpiAvgShodaqoh');
+      if (kpiAvgShodaqoh) kpiAvgShodaqoh.textContent = formatRupiah(avgShodaqoh);
+
+      const avgExpense = summaryCountKredit > 0 ? (summaryKredit / summaryCountKredit) : 0;
+      const kpiAvgExpense = document.getElementById('kpiAvgExpense');
+      if (kpiAvgExpense) kpiAvgExpense.textContent = formatRupiah(avgExpense);
+
+      const totalTxCount = summaryCountDebet + summaryCountKredit;
+      const kpiTotalTxCount = document.getElementById('kpiTotalTxCount');
+      if (kpiTotalTxCount) kpiTotalTxCount.textContent = totalTxCount + ' Transaksi';
+
+      updateCharts(filteredSummary);
+
+      const filteredBk = getFilteredTransactions('bk');
+      let bkDebet = 0;
+      let bkKredit = 0;
+
+      filteredBk.forEach(t => {
+        const amt = parseNumericAmount(t.amount);
+        if (t.type === 'debet') {
+          bkDebet += amt;
+        } else {
+          bkKredit += amt;
+        }
+      });
+      const bkNet = bkDebet - bkKredit;
+
+      const bkIncome = document.getElementById('bkIncomeSummary');
+      const bkExpense = document.getElementById('bkExpenseSummary');
+      const bkBalance = document.getElementById('bkBalanceSummary');
+      if (bkIncome) bkIncome.textContent = formatRupiah(bkDebet);
+      if (bkExpense) bkExpense.textContent = formatRupiah(bkKredit);
+      if (bkBalance) bkBalance.textContent = formatRupiah(bkNet);
+
+      renderTable(filteredBk);
+    }
+
+    // Window Loaded Listener
     window.addEventListener('DOMContentLoaded', async () => {
       const todayStr = new Date().toISOString().split('T')[0];
       const inputDateEl = document.getElementById('inputDate');
