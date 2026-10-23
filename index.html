@@ -1093,6 +1093,38 @@
               </ul>
             </div>
 
+            <!-- SEPARATOR -->
+            <div class="relative py-2">
+              <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                <div class="w-full border-t border-slate-200 dark:border-slate-800"></div>
+              </div>
+              <div class="relative flex justify-center text-xs uppercase">
+                <span class="bg-white dark:bg-[#111c38] px-3 font-extrabold text-slate-400 dark:text-slate-500 tracking-wider">
+                  <i class="fa-solid fa-bullhorn mr-1 text-emerald-500"></i> Pengumuman & Informasi Kelompok
+                </span>
+              </div>
+            </div>
+
+            <!-- INFORMASI TAMBAHAN / PENGUMUMAN KELOMPOK -->
+            <div class="space-y-4 pt-1">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="font-black text-sm text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
+                    <i class="fa-solid fa-newspaper text-emerald-600 dark:text-emerald-400"></i> InformasiKU / Kegiatan Keuangan
+                  </h4>
+                  <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Jadwal pengoreksian & agenda kegiatan keuangan kelompok</p>
+                </div>
+                <button type="button" onclick="openAddInfoModal()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 shrink-0">
+                  <i class="fa-solid fa-plus"></i> Tambah Informasi
+                </button>
+              </div>
+
+              <!-- Container List Informasi -->
+              <div id="infoListContainer" class="space-y-3">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -1100,6 +1132,50 @@
 
     </main>
 
+  </div>
+
+  <!-- MODAL ADD / EDIT INFORMASI -->
+  <div id="infoModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-[#111c38] rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5 text-left relative overflow-hidden">
+      
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg border border-emerald-200 dark:border-emerald-800">
+            <i class="fa-solid fa-bullhorn"></i>
+          </div>
+          <div>
+            <h3 id="infoModalTitle" class="font-extrabold text-base text-slate-900 dark:text-white">Tambah Informasi Baru</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Disimpan ke Sheet InformasiKU</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeInfoModal()" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleSaveInformasi(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Tanggal Informasi / Kegiatan <span class="text-rose-500">*</span></label>
+          <input type="date" id="infoTanggalInput" required class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl px-3.5 py-2.5 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Isi Informasi / Agenda <span class="text-rose-500">*</span></label>
+          <textarea id="infoTextarea" rows="4" placeholder="Tuliskan pengumuman atau agenda kegiatan keuangan di sini..." required class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl p-3.5 text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white"></textarea>
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <button type="button" onclick="closeInfoModal()" class="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-2xl text-xs font-bold transition-all">
+            Batal
+          </button>
+          <button type="submit" id="saveInfoBtn" class="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-bold transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span id="saveInfoBtnText">Simpan Informasi</span>
+          </button>
+        </div>
+      </form>
+
+    </div>
   </div>
 
   <!-- CHANGE PASSWORD MODAL -->
@@ -1220,7 +1296,7 @@
     // USER MANAGEMENT & AUTHENTICATION ENDPOINT
     const USER_SHEETS_URL = "https://script.google.com/macros/s/AKfycbycnHCuDoV9g3bWhzzI2LZxMoAeh9QuajN5EHkhfYlUh6TKfWhOFm-6wcp7CuNIF0RaBg/exec";
     // TRANSACTION DATA & LEDGER ENDPOINT
-    const TRANSACTION_SHEETS_URL = "https://script.google.com/macros/s/AKfycbwBQ1iaV6Zsgw6IS1ZzEFPfghacRkOvvn8IyVmiaVx9M6rsKnZ_5Q1hDosiu6ccGYk/exec";
+    const TRANSACTION_SHEETS_URL = "https://script.google.com/macros/s/AKfycbzRPjRxxcNYpaD3tvXK7Rz5tMoEdw3S5aUGh6lPb1DdTvLX6kgFA8xFkarEKesIZVed/exec";
 
     const ALL_CATEGORIES = [
       "KH FR", "KH Shod Daerah", "KH Shod Desa", "KH Shod Kelompok",
@@ -1254,6 +1330,11 @@
     // Global App State
     let jamaahList = [];
     let transactions = [];
+    let informasiList = [
+      { id: "info-1", no: 1, informasi: "Pengoreksian Keuangan Kelompok akan dilakukan di Masjid Baitul Haq pada tanggal 7 November 2026 pada pukul 11.00 WIB", tanggal: "7 Nov 2026" },
+      { id: "info-2", no: 2, informasi: "Setoran KU kelompok ke desa di Masjid Baitul Hasan akan dilakukan pada tanggal 7 November 2026 pada pukul 13.00-16.00 WIB", tanggal: "7 Nov 2026" }
+    ];
+    let editingInfoId = null;
     let isLoading = false;
     
     let currentAccountUser = ""; 
@@ -1933,6 +2014,15 @@
 
                 renderJamaahDropdownOptions();
               }
+
+              if (Array.isArray(data.informasi) && data.informasi.length > 0) {
+                informasiList = data.informasi.map((inf, i) => ({
+                  id: String(inf.id || 'info-' + (i + 1)),
+                  no: inf.no || (i + 1),
+                  informasi: String(inf.informasi || inf.Info || ''),
+                  tanggal: String(inf.tanggal || inf.Tanggal || '')
+                }));
+              }
             }
           }
         }
@@ -1945,6 +2035,165 @@
         setMonthFilter('latest', 'bk');
         renderDashboard();
         renderRecentTransactions();
+        renderInformasiList();
+      }
+    }
+
+    // INFORMASI MANAGEMENT FUNCTIONS
+    function renderInformasiList() {
+      const container = document.getElementById('infoListContainer');
+      if (!container) return;
+
+      container.innerHTML = '';
+
+      if (informasiList.length === 0) {
+        container.innerHTML = `
+          <div class="p-5 text-center text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-200/80 dark:border-slate-800 text-xs font-medium">
+            <i class="fa-solid fa-circle-info text-2xl mb-1 block text-slate-300 dark:text-slate-600"></i>
+            Belum ada informasi/kegiatan tambahan yang dimasukkan.
+          </div>
+        `;
+        return;
+      }
+
+      informasiList.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = "bg-slate-50/80 dark:bg-[#0b1329] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-all hover:border-emerald-500/40";
+        
+        const safeId = String(item.id).replace(/'/g, "\\'");
+        const displayDate = normalizeDateToDDMMYYYY(item.tanggal) || item.tanggal;
+
+        card.innerHTML = `
+          <div class="space-y-1.5 flex-1">
+            <div class="flex items-center gap-2">
+              <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-black text-[10px] flex items-center justify-center shrink-0">
+                ${idx + 1}
+              </span>
+              <span class="px-2.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800/60 font-mono text-[11px]">
+                <i class="fa-regular fa-calendar-check mr-1"></i>${displayDate}
+              </span>
+            </div>
+            <p class="text-slate-800 dark:text-slate-200 font-semibold leading-relaxed pt-0.5">
+              ${item.informasi}
+            </p>
+          </div>
+
+          <div class="flex items-center space-x-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200/60 dark:border-slate-800">
+            <button type="button" onclick="openEditInfoModal('${safeId}')" class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 rounded-xl font-bold text-xs transition-all flex items-center gap-1">
+              <i class="fa-solid fa-pen-to-square"></i> Edit
+            </button>
+            <button type="button" onclick="deleteInformasi('${safeId}')" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 rounded-xl font-bold text-xs transition-all flex items-center gap-1">
+              <i class="fa-solid fa-trash-can"></i> Hapus
+            </button>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function openAddInfoModal() {
+      editingInfoId = null;
+      document.getElementById('infoModalTitle').textContent = "Tambah Informasi Baru";
+      const todayIso = new Date().toISOString().split('T')[0];
+      document.getElementById('infoTanggalInput').value = todayIso;
+      document.getElementById('infoTextarea').value = "";
+      document.getElementById('saveInfoBtnText').textContent = "Simpan Informasi";
+      document.getElementById('infoModal').classList.remove('hidden');
+    }
+
+    function openEditInfoModal(id) {
+      const item = informasiList.find(i => String(i.id) === String(id));
+      if (!item) return;
+
+      editingInfoId = item.id;
+      document.getElementById('infoModalTitle').textContent = "Edit Informasi";
+      
+      const isoDate = parseDDMMYYYYtoISO(item.tanggal) || item.tanggal;
+      document.getElementById('infoTanggalInput').value = isoDate;
+      document.getElementById('infoTextarea').value = item.informasi;
+      document.getElementById('saveInfoBtnText').textContent = "Update Informasi";
+      document.getElementById('infoModal').classList.remove('hidden');
+    }
+
+    function closeInfoModal() {
+      document.getElementById('infoModal').classList.add('hidden');
+      editingInfoId = null;
+    }
+
+    async function handleSaveInformasi(e) {
+      if (e && e.preventDefault) e.preventDefault();
+
+      const rawDate = document.getElementById('infoTanggalInput').value;
+      const infoText = document.getElementById('infoTextarea').value.trim();
+
+      if (!rawDate || !infoText) {
+        showToast("Lengkapi tanggal dan isi informasi!");
+        return false;
+      }
+
+      const formattedDate = parseISOtoDDMMYYYY(rawDate);
+
+      if (editingInfoId) {
+        const idx = informasiList.findIndex(i => String(i.id) === String(editingInfoId));
+        if (idx !== -1) {
+          informasiList[idx].tanggal = formattedDate;
+          informasiList[idx].informasi = infoText;
+        }
+      } else {
+        const newObj = {
+          id: 'info-' + Date.now(),
+          no: informasiList.length + 1,
+          informasi: infoText,
+          tanggal: formattedDate
+        };
+        informasiList.push(newObj);
+      }
+
+      renderInformasiList();
+      closeInfoModal();
+      showToast("Menyimpan informasi ke Spreadsheet...");
+
+      try {
+        await syncInformasiToSheets();
+        showToast("InformasiKU berhasil disimpan!");
+      } catch (err) {
+        showToast("Informasi tersimpan lokal. Gagal sinkron ke Sheets: " + err.message);
+      }
+      return false;
+    }
+
+    async function deleteInformasi(id) {
+      if (!id) return;
+      if (!confirm("Apakah Anda yakin ingin menghapus informasi ini?")) return;
+
+      informasiList = informasiList.filter(i => String(i.id) !== String(id));
+      renderInformasiList();
+      showToast("Menghapus informasi dari Spreadsheet...");
+
+      try {
+        await syncInformasiToSheets();
+        showToast("InformasiKU berhasil dihapus!");
+      } catch (err) {
+        showToast("Informasi dihapus lokal. Gagal sinkron ke Sheets: " + err.message);
+      }
+    }
+
+    async function syncInformasiToSheets() {
+      if (!TRANSACTION_SHEETS_URL) return;
+      try {
+        await fetch(TRANSACTION_SHEETS_URL, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'syncInformasi',
+            informasi: informasiList
+          })
+        });
+      } catch (err) {
+        console.error("Gagal sinkronisasi InformasiKU:", err);
+        throw err;
       }
     }
 
