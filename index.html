@@ -1134,6 +1134,17 @@
 
   </div>
 
+  <!-- Toast Success Notification -->
+  <div id="toastSuccess" class="hidden fixed bottom-5 right-5 z-50 bg-emerald-950/90 backdrop-blur-md border border-emerald-500/50 p-4 rounded-2xl text-emerald-200 text-xs font-semibold shadow-2xl flex items-center justify-between space-x-3 max-w-md">
+    <span class="flex items-center gap-2">
+      <i class="fa-solid fa-circle-check text-base text-emerald-400"></i>
+      <span id="toastMsg">Transaksi berhasil disimpan!</span>
+    </span>
+    <button onclick="document.getElementById('toastSuccess').classList.add('hidden')" class="text-slate-400 hover:text-white">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+
   <!-- MODAL ADD / EDIT INFORMASI -->
   <div id="infoModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
     <div class="bg-white dark:bg-[#111c38] rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5 text-left relative overflow-hidden">
@@ -1244,7 +1255,18 @@
             <span id="saveChangePassBtnText">Simpan Password</span>
           </button>
         </div>
-      <div class="space-y-5 text-center">
+      </form>
+
+    </div>
+  </div>
+
+  <!-- DELETE CONFIRMATION MODAL -->
+  <div id="confirmModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-[#111c38] rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 text-center relative overflow-hidden">
+      <div class="w-14 h-14 bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center text-2xl mx-auto border border-rose-200 dark:border-rose-900">
+        <i class="fa-solid fa-trash-can"></i>
+      </div>
+      <div class="space-y-1.5 text-center">
         <h3 class="text-base font-extrabold text-slate-900 dark:text-white">Konfirmasi Hapus Transaksi</h3>
         <p id="confirmModalMsg" class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
           Apakah Anda yakin ingin menghapus transaksi ini?
@@ -1292,10 +1314,8 @@
 
   <!-- ==================== JAVASCRIPT LOGIC ==================== -->
   <script>
-    // 1. ENDPOINT SPECS FOR DUAL SPREADSHEETS
-    // USER MANAGEMENT & AUTHENTICATION ENDPOINT
+    // ENDPOINTS
     const USER_SHEETS_URL = "https://script.google.com/macros/s/AKfycbycnHCuDoV9g3bWhzzI2LZxMoAeh9QuajN5EHkhfYlUh6TKfWhOFm-6wcp7CuNIF0RaBg/exec";
-    // TRANSACTION DATA & LEDGER ENDPOINT
     const TRANSACTION_SHEETS_URL = "https://script.google.com/macros/s/AKfycbzRPjRxxcNYpaD3tvXK7Rz5tMoEdw3S5aUGh6lPb1DdTvLX6kgFA8xFkarEKesIZVed/exec";
 
     const ALL_CATEGORIES = [
@@ -1331,8 +1351,8 @@
     let jamaahList = [];
     let transactions = [];
     let informasiList = [
-      { id: "info-1", no: 1, informasi: "Pengoreksian Keuangan Kelompok akan dilakukan di Masjid Baitul Haq pada tanggal 7 November 2026 pada pukul 11.00 WIB", tanggal: "7 Nov 2026" },
-      { id: "info-2", no: 2, informasi: "Setoran KU kelompok ke desa di Masjid Baitul Hasan akan dilakukan pada tanggal 7 November 2026 pada pukul 13.00-16.00 WIB", tanggal: "7 Nov 2026" }
+      { id: "info-1", no: 1, informasi: "Pengoreksian Keuangan Kelompok akan dilakukan di Masjid Baitul Haq pada tanggal 7 November 2026 pada pukul 11.00 WIB", tanggal: "07/11/2026" },
+      { id: "info-2", no: 2, informasi: "Setoran KU kelompok ke desa di Masjid Baitul Hasan akan dilakukan pada tanggal 7 November 2026 pada pukul 13.00-16.00 WIB", tanggal: "07/11/2026" }
     ];
     let editingInfoId = null;
     let isLoading = false;
@@ -1357,7 +1377,7 @@
     let currentPage = 1;
     const ITEMS_PER_PAGE = 20;
 
-    // Core Formatting Helpers (Top level)
+    // Formatting & Utility Helpers
     function formatRupiah(amount) {
       return new Intl.NumberFormat('id-ID', {
         style: 'currency',
@@ -1511,7 +1531,6 @@
       return tabs.length > 0 ? tabs : ['summary'];
     }
 
-    // Modal Change Password Handler (Uses USER_SHEETS_URL)
     function openChangePasswordModal() {
       const modal = document.getElementById('changePasswordModal');
       const userBadge = document.getElementById('changePassUsernameBadge');
@@ -1601,7 +1620,6 @@
       return false;
     }
 
-    // Login Handler via USER_SHEETS_URL (Strict online authentication)
     async function handleFrontLogin(e) {
       if (e && e.preventDefault) e.preventDefault();
       
@@ -1693,7 +1711,6 @@
         return false;
       }
 
-      // Successful login reset attempt counter
       failedLoginAttempts = 0;
 
       currentAccountUser = authenticatedUser.user;
@@ -1851,12 +1868,8 @@
       const sidebar = document.getElementById('mainSidebar');
       const backdrop = document.getElementById('sidebarBackdrop');
       
-      if (sidebar) {
-        sidebar.classList.toggle('-translate-x-full');
-      }
-      if (backdrop) {
-        backdrop.classList.toggle('hidden');
-      }
+      if (sidebar) sidebar.classList.toggle('-translate-x-full');
+      if (backdrop) backdrop.classList.toggle('hidden');
     }
 
     function copyRekeningNumber() {
@@ -1870,97 +1883,7 @@
       showToast("Nomor rekening (505394744846) berhasil disalin ke clipboard!");
     }
 
-    // Filter, Dropdown & Data Fetching (Uses TRANSACTION_SHEETS_URL)
-    function renderCheckboxesForCategories(scope = 'summary') {
-      const containerId = scope === 'bk' ? 'bkCategoryCheckboxesContainer' : 'categoryCheckboxesContainer';
-      const container = document.getElementById(containerId);
-      if (!container) return;
-
-      container.innerHTML = '';
-      ALL_CATEGORIES.forEach(cat => {
-        const checkboxClass = scope === 'bk' ? 'bk-category-checkbox' : 'category-checkbox';
-        
-        let labelClass = "font-medium";
-        if (cat.startsWith('KH ')) {
-          labelClass = "font-bold text-emerald-700 dark:text-emerald-400";
-        }
-
-        const label = document.createElement('label');
-        label.className = "flex items-center space-x-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-700/50 p-1.5 rounded-lg cursor-pointer";
-        label.innerHTML = `
-          <input type="checkbox" value="${cat}" class="${checkboxClass} rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 dark:border-slate-600" onchange="onCategoryCheckboxChange('${scope}')" checked>
-          <span class="${labelClass}">${cat}</span>
-        `;
-        container.appendChild(label);
-      });
-    }
-
-    function renderInputCategoryOptions() {
-      const selectEl = document.getElementById('inputCategory');
-      if (!selectEl) return;
-      
-      const currentSelected = selectEl.value;
-      selectEl.innerHTML = '<option value="" disabled selected>-- Pilih Klasifikasi --</option>';
-
-      ALL_CATEGORIES.forEach(cat => {
-        const opt = document.createElement('option');
-        opt.value = cat;
-        opt.textContent = cat;
-        if (currentSelected === cat) opt.selected = true;
-        selectEl.appendChild(opt);
-      });
-    }
-
-    function renderJamaahDropdownOptions(selectedValue = '') {
-      const selectEl = document.getElementById('inputJamaah');
-      if (!selectEl) return;
-
-      selectEl.innerHTML = '';
-
-      const defaultOpt = document.createElement('option');
-      defaultOpt.value = '';
-      defaultOpt.disabled = true;
-      if (!selectedValue) defaultOpt.selected = true;
-      defaultOpt.textContent = '-- Pilih Nama Jamaah --';
-      selectEl.appendChild(defaultOpt);
-
-      const sortedList = Array.from(new Set(jamaahList)).sort();
-      sortedList.forEach(name => {
-        const opt = document.createElement('option');
-        opt.value = name;
-        opt.textContent = name;
-        if (selectedValue && selectedValue.toUpperCase() === name.toUpperCase()) {
-          opt.selected = true;
-        }
-        selectEl.appendChild(opt);
-      });
-
-      const addOpt = document.createElement('option');
-      addOpt.value = 'ADD_NEW_JAMAAH';
-      addOpt.className = 'font-bold text-emerald-600 dark:text-emerald-400';
-      addOpt.textContent = '+ Tambah Jamaah Baru...';
-      selectEl.appendChild(addOpt);
-    }
-
-    function handleJamaahSelectChange() {
-      const selectEl = document.getElementById('inputJamaah');
-      const newJamaahGroup = document.getElementById('newJamaahInputGroup');
-      const newJamaahInput = document.getElementById('inputNewJamaah');
-
-      if (!selectEl || !newJamaahGroup || !newJamaahInput) return;
-
-      if (selectEl.value === 'ADD_NEW_JAMAAH') {
-        newJamaahGroup.classList.remove('hidden');
-        newJamaahInput.required = true;
-        newJamaahInput.focus();
-      } else {
-        newJamaahGroup.classList.add('hidden');
-        newJamaahInput.required = false;
-        newJamaahInput.value = '';
-      }
-    }
-
-    // Fetches transaction data from TRANSACTION_SHEETS_URL
+    // Dynamic Spreadsheet Loading & Adaptive Mapping
     async function syncAndLoadLatestData() {
       isLoading = true;
       const refreshIcon = document.getElementById('refreshIcon');
@@ -1980,18 +1903,14 @@
               if (Array.isArray(data)) {
                 txArray = data;
               } else if (typeof data === 'object' && data !== null) {
-                if (Array.isArray(data.transactions)) {
-                  txArray = data.transactions;
-                }
-                if (Array.isArray(data.jamaah)) {
-                  sheetsJamaahArray = data.jamaah;
-                }
+                if (Array.isArray(data.transactions)) txArray = data.transactions;
+                if (Array.isArray(data.jamaah)) sheetsJamaahArray = data.jamaah;
               }
 
               if (sheetsJamaahArray.length > 0) {
                 jamaahList = Array.from(new Set(
                   sheetsJamaahArray
-                    .map(j => (typeof j === 'string' ? j : (j.nama || j.nama_jamaah || '')).trim().toUpperCase())
+                    .map(j => (typeof j === 'string' ? j : (j.nama || j.nama_jamaah || j.Nama || '')).trim().toUpperCase())
                     .filter(Boolean)
                 )).sort();
               } else {
@@ -1999,18 +1918,27 @@
               }
 
               if (txArray.length > 0) {
-                transactions = txArray.map((t, idx) => ({
-                  id: String(t.id || 'tx-' + idx + '-' + Date.now()),
-                  date: normalizeDateToDDMMYYYY(t.date),
-                  type: String(t.type || 'debet').toLowerCase(),
-                  category: String(t.category || 'Lain-lain'),
-                  description: String(t.description || ''),
-                  notes: String(t.notes || ''),
-                  amount: parseNumericAmount(t.amount),
-                  timestamp_input: String(t.timestamp_input || ''),
-                  petugas_input: String(t.petugas_input || ''),
-                  bukti_url: String(t.bukti_url || '')
-                }));
+                transactions = txArray.map((t, idx) => {
+                  const rawDate = t.date || t.Date || t.tanggal || t.Tanggal || t.TGL || '';
+                  const rawType = t.type || t.Type || t.tipe || t.Tipe || 'debet';
+                  const rawCategory = t.category || t.Category || t.klasifikasi || t.Klasifikasi || 'Lain-lain';
+                  const rawDesc = t.description || t.Description || t.uraian || t.Uraian || t.Detail || '';
+                  const rawNotes = t.notes || t.Notes || t.keterangan || t.Keterangan || '';
+                  const rawAmount = t.amount || t.Amount || t.nominal || t.Nominal || t.Jumlah || 0;
+
+                  return {
+                    id: String(t.id || 'tx-' + idx + '-' + Date.now()),
+                    date: normalizeDateToDDMMYYYY(rawDate),
+                    type: String(rawType).toLowerCase().trim(),
+                    category: String(rawCategory).trim(),
+                    description: String(rawDesc).trim(),
+                    notes: String(rawNotes).trim(),
+                    amount: parseNumericAmount(rawAmount),
+                    timestamp_input: String(t.timestamp_input || t.Timestamp || ''),
+                    petugas_input: String(t.petugas_input || t.Petugas || ''),
+                    bukti_url: String(t.bukti_url || t.Bukti || '')
+                  };
+                });
 
                 renderJamaahDropdownOptions();
               }
@@ -2019,8 +1947,8 @@
                 informasiList = data.informasi.map((inf, i) => ({
                   id: String(inf.id || 'info-' + (i + 1)),
                   no: inf.no || (i + 1),
-                  informasi: String(inf.informasi || inf.Info || ''),
-                  tanggal: String(inf.tanggal || inf.Tanggal || '')
+                  informasi: String(inf.informasi || inf.Info || inf.Informasi || ''),
+                  tanggal: normalizeDateToDDMMYYYY(inf.tanggal || inf.Tanggal || '')
                 }));
               }
             }
@@ -2039,7 +1967,7 @@
       }
     }
 
-    // INFORMASI MANAGEMENT FUNCTIONS
+    // Informasi List Rendering
     function renderInformasiList() {
       const container = document.getElementById('infoListContainer');
       if (!container) return;
@@ -2158,7 +2086,7 @@
         await syncInformasiToSheets();
         showToast("InformasiKU berhasil disimpan!");
       } catch (err) {
-        showToast("Informasi tersimpan lokal. Gagal sinkron ke Sheets: " + err.message);
+        showToast("Informasi tersimpan lokal.");
       }
       return false;
     }
@@ -2175,7 +2103,7 @@
         await syncInformasiToSheets();
         showToast("InformasiKU berhasil dihapus!");
       } catch (err) {
-        showToast("Informasi dihapus lokal. Gagal sinkron ke Sheets: " + err.message);
+        showToast("Informasi dihapus.");
       }
     }
 
@@ -2193,7 +2121,95 @@
         });
       } catch (err) {
         console.error("Gagal sinkronisasi InformasiKU:", err);
-        throw err;
+      }
+    }
+
+    function renderCheckboxesForCategories(scope = 'summary') {
+      const containerId = scope === 'bk' ? 'bkCategoryCheckboxesContainer' : 'categoryCheckboxesContainer';
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      container.innerHTML = '';
+      ALL_CATEGORIES.forEach(cat => {
+        const checkboxClass = scope === 'bk' ? 'bk-category-checkbox' : 'category-checkbox';
+        
+        let labelClass = "font-medium";
+        if (cat.startsWith('KH ')) {
+          labelClass = "font-bold text-emerald-700 dark:text-emerald-400";
+        }
+
+        const label = document.createElement('label');
+        label.className = "flex items-center space-x-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-700/50 p-1.5 rounded-lg cursor-pointer";
+        label.innerHTML = `
+          <input type="checkbox" value="${cat}" class="${checkboxClass} rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 dark:border-slate-600" onchange="onCategoryCheckboxChange('${scope}')" checked>
+          <span class="${labelClass}">${cat}</span>
+        `;
+        container.appendChild(label);
+      });
+    }
+
+    function renderInputCategoryOptions() {
+      const selectEl = document.getElementById('inputCategory');
+      if (!selectEl) return;
+      
+      const currentSelected = selectEl.value;
+      selectEl.innerHTML = '<option value="" disabled selected>-- Pilih Klasifikasi --</option>';
+
+      ALL_CATEGORIES.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        if (currentSelected === cat) opt.selected = true;
+        selectEl.appendChild(opt);
+      });
+    }
+
+    function renderJamaahDropdownOptions(selectedValue = '') {
+      const selectEl = document.getElementById('inputJamaah');
+      if (!selectEl) return;
+
+      selectEl.innerHTML = '';
+
+      const defaultOpt = document.createElement('option');
+      defaultOpt.value = '';
+      defaultOpt.disabled = true;
+      if (!selectedValue) defaultOpt.selected = true;
+      defaultOpt.textContent = '-- Pilih Nama Jamaah --';
+      selectEl.appendChild(defaultOpt);
+
+      const sortedList = Array.from(new Set(jamaahList)).sort();
+      sortedList.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        if (selectedValue && selectedValue.toUpperCase() === name.toUpperCase()) {
+          opt.selected = true;
+        }
+        selectEl.appendChild(opt);
+      });
+
+      const addOpt = document.createElement('option');
+      addOpt.value = 'ADD_NEW_JAMAAH';
+      addOpt.className = 'font-bold text-emerald-600 dark:text-emerald-400';
+      addOpt.textContent = '+ Tambah Jamaah Baru...';
+      selectEl.appendChild(addOpt);
+    }
+
+    function handleJamaahSelectChange() {
+      const selectEl = document.getElementById('inputJamaah');
+      const newJamaahGroup = document.getElementById('newJamaahInputGroup');
+      const newJamaahInput = document.getElementById('inputNewJamaah');
+
+      if (!selectEl || !newJamaahGroup || !newJamaahInput) return;
+
+      if (selectEl.value === 'ADD_NEW_JAMAAH') {
+        newJamaahGroup.classList.remove('hidden');
+        newJamaahInput.required = true;
+        newJamaahInput.focus();
+      } else {
+        newJamaahGroup.classList.add('hidden');
+        newJamaahInput.required = false;
+        newJamaahInput.value = '';
       }
     }
 
@@ -2216,14 +2232,10 @@
         }
 
         jamaahGroup.classList.remove('hidden');
-        if (jamaahSelect) {
-          jamaahSelect.required = true;
-        }
+        if (jamaahSelect) jamaahSelect.required = true;
       } else {
         descGroup.classList.remove('hidden');
-        if (descInput) {
-          descInput.required = true;
-        }
+        if (descInput) descInput.required = true;
 
         jamaahGroup.classList.add('hidden');
         if (jamaahSelect) {
@@ -2578,24 +2590,12 @@
       const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
 
       const categoryColors = {
-        'KH FR': '#8b5cf6',
-        'KH Shod Daerah': '#ec4899',
-        'KH Shod Desa': '#06b6d4',
-        'KH Shod Kelompok': '#84cc16',
-        'KH Infaq': '#14b8a6',
-        'Shodaqoh': '#10b981',
-        'Tabungan Kurban': '#0d9488',
-        'Program': '#6366f1',
-        'Konsumsi': '#f59e0b',
-        'Operasional': '#3b82f6',
-        'Pembangunan': '#f97316',
-        'Perlengkapan': '#a855f7',
-        'Setoran KU': '#4f46e5',
-        'Pinjaman/Piutang': '#64748b',
-        'Ukhro': '#d97706',
-        'Lain-lain': '#94a3b8',
-        'Lain-lain Desa': '#0284c7',
-        'Lain-lain Daerah': '#e11d48'
+        'KH FR': '#8b5cf6', 'KH Shod Daerah': '#ec4899', 'KH Shod Desa': '#06b6d4',
+        'KH Shod Kelompok': '#84cc16', 'KH Infaq': '#14b8a6', 'Shodaqoh': '#10b981',
+        'Tabungan Kurban': '#0d9488', 'Program': '#6366f1', 'Konsumsi': '#f59e0b',
+        'Operasional': '#3b82f6', 'Pembangunan': '#f97316', 'Perlengkapan': '#a855f7',
+        'Setoran KU': '#4f46e5', 'Pinjaman/Piutang': '#64748b', 'Ukhro': '#d97706',
+        'Lain-lain': '#94a3b8', 'Lain-lain Desa': '#0284c7', 'Lain-lain Daerah': '#e11d48'
       };
 
       const incomeTotals = {};
@@ -2634,19 +2634,10 @@
             plugins: {
               legend: {
                 position: 'right',
-                labels: {
-                  color: textColor,
-                  font: { family: 'Plus Jakarta Sans', size: 11 },
-                  boxWidth: 12,
-                  padding: 10
-                }
+                labels: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 11 }, boxWidth: 12, padding: 10 }
               },
               tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    return `${context.label || ''}: ${formatRupiah(context.raw || 0)}`;
-                  }
-                }
+                callbacks: { label: (c) => `${c.label || ''}: ${formatRupiah(c.raw || 0)}` }
               }
             },
             cutout: '65%'
@@ -2678,19 +2669,10 @@
             plugins: {
               legend: {
                 position: 'right',
-                labels: {
-                  color: textColor,
-                  font: { family: 'Plus Jakarta Sans', size: 11 },
-                  boxWidth: 12,
-                  padding: 10
-                }
+                labels: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 11 }, boxWidth: 12, padding: 10 }
               },
               tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    return `${context.label || ''}: ${formatRupiah(context.raw || 0)}`;
-                  }
-                }
+                callbacks: { label: (c) => `${c.label || ''}: ${formatRupiah(c.raw || 0)}` }
               }
             },
             cutout: '65%'
@@ -2702,14 +2684,9 @@
       data.forEach(t => {
         const normalizedDate = normalizeDateToDDMMYYYY(t.date);
         const amt = parseNumericAmount(t.amount);
-        if (!dateMap[normalizedDate]) {
-          dateMap[normalizedDate] = { debet: 0, kredit: 0 };
-        }
-        if (t.type === 'debet') {
-          dateMap[normalizedDate].debet += amt;
-        } else {
-          dateMap[normalizedDate].kredit += amt;
-        }
+        if (!dateMap[normalizedDate]) dateMap[normalizedDate] = { debet: 0, kredit: 0 };
+        if (t.type === 'debet') dateMap[normalizedDate].debet += amt;
+        else dateMap[normalizedDate].kredit += amt;
       });
 
       const sortedDates = Object.keys(dateMap).sort((a, b) => 
@@ -2752,36 +2729,19 @@
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-              x: {
-                grid: { color: gridColor },
-                ticks: { color: textColor, font: { size: 10 } }
-              },
+              x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } },
               y: {
                 grid: { color: gridColor },
                 ticks: {
                   color: textColor,
                   font: { size: 10 },
-                  callback: function(value) {
-                    return 'Rp ' + (value / 1000) + 'k';
-                  }
+                  callback: (value) => 'Rp ' + (value / 1000) + 'k'
                 }
               }
             },
             plugins: {
-              legend: {
-                labels: {
-                  color: textColor,
-                  font: { family: 'Plus Jakarta Sans', size: 11 },
-                  boxWidth: 12
-                }
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    return `${context.dataset.label}: ${formatRupiah(context.raw)}`;
-                  }
-                }
-              }
+              legend: { labels: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 11 }, boxWidth: 12 } },
+              tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${formatRupiah(c.raw)}` } }
             }
           }
         });
@@ -2838,10 +2798,10 @@
           </td>
           <td class="py-2.5 px-3 text-center whitespace-nowrap">
             <div class="flex items-center justify-center space-x-1.5">
-              <button type="button" onclick="editTransaction('${safeId}')" class="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 rounded-md font-semibold text-[11px] transition-colors flex items-center gap-1" title="Edit Transaksi Ini">
+              <button type="button" onclick="editTransaction('${safeId}')" class="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 rounded-md font-semibold text-[11px] transition-colors flex items-center gap-1">
                 <i class="fa-solid fa-pen-to-square"></i> Edit
               </button>
-              <button type="button" onclick="promptDeleteTransaction('${safeId}')" class="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 rounded-md font-semibold text-[11px] transition-colors flex items-center gap-1" title="Hapus Transaksi Ini">
+              <button type="button" onclick="promptDeleteTransaction('${safeId}')" class="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 rounded-md font-semibold text-[11px] transition-colors flex items-center gap-1">
                 <i class="fa-solid fa-trash-can"></i> Hapus
               </button>
             </div>
@@ -2867,9 +2827,7 @@
         const jamaahSelect = document.getElementById('inputJamaah');
         if (jamaahSelect) {
           jamaahSelect.value = tx.description;
-          if (!jamaahSelect.value) {
-            renderJamaahDropdownOptions(tx.description);
-          }
+          if (!jamaahSelect.value) renderJamaahDropdownOptions(tx.description);
         }
       } else {
         document.getElementById('inputDescription').value = tx.description;
@@ -2920,7 +2878,7 @@
 
       try {
         await syncAllToSheets();
-        showToast("Transaksi berhasil dihapus dari Google Sheets!");
+        showToast("Transaksi berhasil dihapus!");
       } catch (err) {
         showToast("Gagal menyinkronkan hapus: " + err.message);
       }
@@ -2938,7 +2896,6 @@
       }
     }
 
-    // Sync transactions to TRANSACTION_SHEETS_URL
     async function syncAllToSheets() {
       if (!TRANSACTION_SHEETS_URL) return;
       try {
@@ -2946,10 +2903,7 @@
           method: 'POST',
           mode: 'cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'syncAll',
-            transactions: transactions
-          })
+          body: JSON.stringify({ action: 'syncAll', transactions: transactions })
         });
       } catch (err) {
         console.error("Gagal sinkronisasi data ke Google Sheets Transaksi:", err);
@@ -3081,10 +3035,7 @@
               method: 'POST',
               mode: 'cors',
               headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-              body: JSON.stringify({
-                action: 'add',
-                transaction: newTransaction
-              })
+              body: JSON.stringify({ action: 'add', transaction: newTransaction })
             });
 
             if (res.ok) {
@@ -3119,10 +3070,7 @@
           method: 'POST',
           mode: 'cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'addJamaah',
-            nama: namaJamaah
-          })
+          body: JSON.stringify({ action: 'addJamaah', nama: namaJamaah })
         });
       } catch (e) {
         console.warn("Gagal mengirim nama jamaah baru:", e);
@@ -3174,7 +3122,7 @@
       html2pdf().set(opt).from(element).save().then(() => {
         element.classList.remove('p-4', 'bg-white');
         showToast("Laporan PDF berhasil diunduh!");
-      }).catch(err => {
+      }).catch(() => {
         element.classList.remove('p-4', 'bg-white');
         window.print();
       });
@@ -3209,11 +3157,6 @@
       document.body.removeChild(link);
     }
 
-    function formatDateIndo(dateStr) {
-      if (!dateStr) return '-';
-      return normalizeDateToDDMMYYYY(dateStr);
-    }
-
     function renderDashboard() {
       if (isLoading) return;
 
@@ -3226,14 +3169,10 @@
         const amt = parseNumericAmount(t.amount);
         if (t.type === 'debet') {
           overallDebet += amt;
-          if (KELOMPOK_CATEGORIES.includes(t.category)) {
-            kelompokDebet += amt;
-          }
+          if (KELOMPOK_CATEGORIES.includes(t.category)) kelompokDebet += amt;
         } else {
           overallKredit += amt;
-          if (KELOMPOK_CATEGORIES.includes(t.category)) {
-            kelompokKredit += amt;
-          }
+          if (KELOMPOK_CATEGORIES.includes(t.category)) kelompokKredit += amt;
         }
       });
 
@@ -3327,11 +3266,8 @@
 
       filteredBk.forEach(t => {
         const amt = parseNumericAmount(t.amount);
-        if (t.type === 'debet') {
-          bkDebet += amt;
-        } else {
-          bkKredit += amt;
-        }
+        if (t.type === 'debet') bkDebet += amt;
+        else bkKredit += amt;
       });
       const bkNet = bkDebet - bkKredit;
 
@@ -3345,7 +3281,7 @@
       renderTable(filteredBk);
     }
 
-    // Window Loaded Listener
+    // Window Loaded Initialization
     window.addEventListener('DOMContentLoaded', async () => {
       const todayStr = new Date().toISOString().split('T')[0];
       const inputDateEl = document.getElementById('inputDate');
