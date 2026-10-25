@@ -26,10 +26,9 @@
               700: '#047857',
               800: '#065f46',
               900: '#064e3b',
-              darkBg: '#0b1329',
-              darkCard: '#111c38',
-              darkBorder: '#1e2d54',
-              accent: '#38bdf8'
+              darkBg: '#080e1e',
+              darkCard: '#0f172a',
+              darkBorder: '#1e293b'
             }
           }
         }
@@ -45,10 +44,13 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- html2pdf.js for PDF Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- QRCode.js for Valid Scannable QR Code Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   
   <style>
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
+      color-scheme: light dark;
     }
     .custom-scrollbar::-webkit-scrollbar {
       width: 5px;
@@ -64,14 +66,10 @@
     .dark .custom-scrollbar::-webkit-scrollbar-thumb {
       background: #334155;
     }
-    .fin-card {
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .fin-card:hover {
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
-    }
-    .dark .fin-card:hover {
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    /* Anti Forced Dark Mode Fix for Mobile Browsers */
+    .fix-card-bg {
+      forced-color-adjust: none;
+      -webkit-forced-color-adjust: none;
     }
     @media print {
       .no-print { display: none !important; }
@@ -80,11 +78,11 @@
   </style>
 </head>
 
-<body class="bg-slate-100/80 dark:bg-[#080e1e] text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-200 flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
+<body class="bg-slate-100 dark:bg-[#080e1e] text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-200 flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
 
   <!-- ==================== USERNAME & PASSWORD LOGIN SCREEN ==================== -->
-  <div id="frontLoginModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-lg p-4 overflow-y-auto">
-    <div class="bg-white dark:bg-[#111c38] rounded-3xl max-w-md w-full p-7 sm:p-9 shadow-2xl border border-slate-200/80 dark:border-slate-800 space-y-6 text-center my-auto relative overflow-hidden">
+  <div id="frontLoginModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-[#0f172a] rounded-3xl max-w-md w-full p-7 sm:p-9 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-6 text-center my-auto relative overflow-hidden">
       
       <!-- Top Decorative Accent -->
       <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-indigo-600"></div>
@@ -93,7 +91,7 @@
         <div class="w-20 h-20 bg-gradient-to-tr from-emerald-600 to-teal-500 text-white rounded-3xl flex items-center justify-center text-3xl mx-auto shadow-xl shadow-emerald-500/20 border border-emerald-400/30">
           <i class="fa-solid fa-mosque"></i>
         </div>
-        <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-slate-900 text-emerald-400 rounded-full flex items-center justify-center text-xs border-2 border-white dark:border-[#111c38] shadow">
+        <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-slate-900 text-emerald-400 rounded-full flex items-center justify-center text-xs border-2 border-white dark:border-[#0f172a] shadow">
           <i class="fa-solid fa-shield-halved"></i>
         </div>
       </div>
@@ -111,7 +109,7 @@
           <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 tracking-wide">Username</label>
           <div class="relative">
             <i class="fa-solid fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-            <input type="text" id="frontLoginUsername" placeholder="Masukkan username..." required class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl pl-10 pr-4 py-3.5 text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none dark:text-white transition-all shadow-sm">
+            <input type="text" id="frontLoginUsername" placeholder="Masukkan username..." required class="w-full bg-slate-50 dark:bg-[#080e1e] border border-slate-300 dark:border-slate-700 rounded-2xl pl-10 pr-4 py-3.5 text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none dark:text-white transition-all shadow-sm">
           </div>
         </div>
 
@@ -119,7 +117,7 @@
           <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 tracking-wide">Password Aplikasi</label>
           <div class="relative">
             <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-            <input type="password" id="frontLoginPassword" placeholder="Masukkan password..." required class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl pl-10 pr-10 py-3.5 text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none dark:text-white transition-all shadow-sm">
+            <input type="password" id="frontLoginPassword" placeholder="Masukkan password..." required class="w-full bg-slate-50 dark:bg-[#080e1e] border border-slate-300 dark:border-slate-700 rounded-2xl pl-10 pr-10 py-3.5 text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none dark:text-white transition-all shadow-sm">
             <button type="button" onclick="togglePasswordVisibility('frontLoginPassword', 'frontLoginEyeIcon')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none" title="Tampilkan/Sembunyikan Password">
               <i id="frontLoginEyeIcon" class="fa-solid fa-eye text-sm"></i>
             </button>
@@ -144,13 +142,13 @@
   </div>
 
   <!-- TOP HEADER NAVBAR (Hidden until login) -->
-  <header id="mainAppHeader" class="hidden sticky top-0 z-40 bg-white/90 dark:bg-[#0d162d]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 shadow-sm no-print transition-colors">
+  <header id="mainAppHeader" class="hidden sticky top-0 z-40 bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm no-print transition-colors">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-20 gap-3">
         
         <!-- Hamburger Toggle Button & Mosque Icon & Title -->
         <div class="flex items-center space-x-3 min-w-0">
-          <button onclick="toggleSidebar()" class="p-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none transition-colors shrink-0 shadow-sm border border-slate-200 dark:border-slate-700/60" title="Buka/Tutup Menu Samping">
+          <button onclick="toggleSidebar()" class="p-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none transition-colors shrink-0 shadow-sm border border-slate-200 dark:border-slate-700" title="Buka/Tutup Menu Samping">
             <i class="fa-solid fa-bars text-base sm:text-lg"></i>
           </button>
 
@@ -173,7 +171,7 @@
         <!-- Controls & Auth Badge -->
         <div class="flex items-center space-x-2 sm:space-x-3 shrink-0">
           <!-- Refresh Data Button -->
-          <button onclick="syncAndLoadLatestData()" class="flex items-center space-x-2 px-3.5 py-2.5 text-xs sm:text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 rounded-2xl transition-all shadow-sm border border-slate-200 dark:border-slate-700/60" title="Sinkronkan Data Google Sheets">
+          <button onclick="syncAndLoadLatestData()" class="flex items-center space-x-2 px-3.5 py-2.5 text-xs sm:text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 rounded-2xl transition-all shadow-sm border border-slate-200 dark:border-slate-700" title="Sinkronkan Data Google Sheets">
             <i id="refreshIcon" class="fa-solid fa-rotate-right text-emerald-600 dark:text-emerald-400"></i>
             <span class="hidden md:inline font-semibold">Refresh Data</span>
           </button>
@@ -201,12 +199,12 @@
     <!-- Mobile Overlay Backdrop -->
     <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-30 hidden transition-opacity"></div>
 
-    <!-- SIDEBAR NAVIGATION MENU (Sliding Drawer on Mobile, Sticky on Desktop) -->
-    <aside id="mainSidebar" class="fixed lg:sticky top-0 lg:top-20 left-0 h-screen lg:h-[calc(100vh-5rem)] z-40 w-64 bg-white dark:bg-[#0d162d] border-r border-slate-200/80 dark:border-slate-800 flex flex-col justify-between transition-transform duration-300 ease-in-out overflow-y-auto custom-scrollbar no-print shrink-0 -translate-x-full lg:translate-x-0 shadow-2xl lg:shadow-none">
+    <!-- SIDEBAR NAVIGATION MENU -->
+    <aside id="mainSidebar" class="fixed lg:sticky top-0 lg:top-20 left-0 h-screen lg:h-[calc(100vh-5rem)] z-40 w-64 bg-white dark:bg-[#0f172a] border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between transition-transform duration-300 ease-in-out overflow-y-auto custom-scrollbar no-print shrink-0 -translate-x-full lg:translate-x-0 shadow-2xl lg:shadow-none">
       
       <div class="p-4 space-y-2">
         <!-- Sidebar Header with Close (X) Button -->
-        <div class="flex items-center justify-between px-3 py-2 border-b border-slate-100 dark:border-slate-800/80 mb-2">
+        <div class="flex items-center justify-between px-3 py-2 border-b border-slate-100 dark:border-slate-800 mb-2">
           <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">NAVIGASI UTAMA</span>
           <button onclick="toggleSidebar()" class="p-2 rounded-2xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none transition-colors lg:hidden" title="Tutup Menu">
             <i class="fa-solid fa-xmark text-lg"></i>
@@ -258,7 +256,7 @@
           <i id="navInfoLockIcon" class="fa-solid fa-lock text-xs text-slate-400 ml-1"></i>
         </button>
 
-        <div class="pt-4 mt-2 border-t border-slate-100 dark:border-slate-800/80">
+        <div class="pt-4 mt-2 border-t border-slate-100 dark:border-slate-800">
           <div class="sidebar-header-title px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">
             AKUN & PENGATURAN
           </div>
@@ -285,7 +283,7 @@
       </div>
 
       <!-- Footer Info Sidebar -->
-      <div class="p-4 border-t border-slate-100 dark:border-slate-800/80 text-[11px] text-slate-400 dark:text-slate-500 sidebar-footer bg-slate-50/50 dark:bg-slate-900/30">
+      <div class="p-4 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 dark:text-slate-500 sidebar-footer bg-slate-50/50 dark:bg-slate-900/30">
         <p class="font-bold text-slate-700 dark:text-slate-300">SKB 1 Cash App v3.5</p>
         <p class="text-[10px] text-slate-400">Dual Spreadsheet Sync Active</p>
       </div>
@@ -298,9 +296,8 @@
       <!-- SECTION 1: RINGKASAN DAN ANALISIS -->
       <section id="summaryTabSection" class="space-y-6">
         
-        <!-- Header Greeting -->
-        <div class="bg-gradient-to-r from-emerald-900/90 via-slate-900 to-indigo-950 rounded-3xl p-6 text-white shadow-xl border border-emerald-500/20 relative overflow-hidden">
-          <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <!-- Header Greeting (Fix Contrast: Solid Dark Slate Background for Cross-Browser Readability) -->
+        <div class="bg-[#0f172a] rounded-3xl p-6 text-white shadow-xl border border-slate-800 relative overflow-hidden fix-card-bg">
           <div class="relative z-10 text-left space-y-1.5">
             <div class="flex items-center gap-2">
               <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
@@ -308,7 +305,7 @@
               </span>
             </div>
             <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight">Assalamu'alaikum Wr Wb</h2>
-            <div id="summaryGreetingText" class="text-xs sm:text-sm text-slate-300 leading-relaxed font-medium pt-1">
+            <div id="summaryGreetingText" class="text-xs sm:text-sm text-slate-200 leading-relaxed font-medium pt-1">
               Selamat datang, <strong id="summaryRoleName" class="text-emerald-400 font-bold underline text-xs sm:text-sm">Petugas KU (Arif F)</strong>!<br>
               Halaman ini dikhususkan bagi tim Pengawas KU Kelompok untuk melakukan monitoring keuangan terkini kelompok.
             </div>
@@ -319,7 +316,7 @@
         <div id="summaryDashboardContent" class="space-y-6">
           
           <!-- Header Controls for Summary -->
-          <div class="flex items-center justify-between bg-white dark:bg-[#111c38] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm no-print">
+          <div class="flex items-center justify-between bg-white dark:bg-[#0f172a] p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm no-print">
             <div class="flex items-center space-x-2.5">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
               <span class="text-xs font-extrabold text-slate-700 dark:text-slate-200 uppercase tracking-wider">
@@ -351,56 +348,54 @@
               <p id="pdfPeriodLabel" class="text-xs text-emerald-200 pt-2 border-t border-slate-800 font-semibold">Periode Transaksi: Semua Periode</p>
             </div>
 
-            <!-- Ringkasan Saldo Keseluruhan & Saldo Kelompok -->
+            <!-- Ringkasan Saldo Keseluruhan & Saldo Kelompok (Fixed High-Contrast Solid Background) -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
               <!-- 1. Saldo Kas Akumulatif -->
-              <div class="bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900 rounded-3xl p-6 text-white shadow-xl border border-emerald-500/30 flex flex-col justify-between space-y-5 relative overflow-hidden group">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all"></div>
-                <div class="flex items-center justify-between relative z-10">
+              <div class="bg-[#0f172a] rounded-3xl p-6 text-white shadow-xl border border-emerald-500/30 flex flex-col justify-between space-y-5 fix-card-bg">
+                <div class="flex items-center justify-between">
                   <div class="flex items-center space-x-3.5">
                     <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center border border-emerald-400/30 text-2xl shadow-inner shrink-0">
                       <i class="fa-solid fa-vault"></i>
                     </div>
                     <div>
                       <h3 class="font-black text-sm sm:text-base text-white tracking-wide uppercase">Saldo Kas Akumulatif</h3>
-                      <p class="text-xs text-emerald-200/80 font-medium">Total kas akumulatif seluruh kategori saat ini</p>
+                      <p class="text-xs text-slate-300 font-medium">Total kas akumulatif seluruh kategori saat ini</p>
                     </div>
                   </div>
                   <span class="hidden sm:inline-block px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 rounded-xl border border-emerald-400/30">
                     Akumulatif Total
                   </span>
                 </div>
-                <div class="bg-slate-950/70 backdrop-blur-md rounded-2xl p-4 border border-emerald-400/20 shadow-inner flex items-center justify-end relative z-10">
+                <div class="bg-slate-900 rounded-2xl p-4 border border-emerald-400/30 shadow-inner flex items-center justify-end">
                   <span id="overallBalance" class="text-2xl sm:text-3xl font-black text-white tracking-tight font-mono">Rp 0</span>
                 </div>
               </div>
 
               <!-- 2. Saldo Kas Akumulatif Kelompok -->
-              <div class="bg-gradient-to-br from-slate-900 via-teal-950 to-indigo-950 rounded-3xl p-6 text-white shadow-xl border border-teal-500/30 flex flex-col justify-between space-y-5 relative overflow-hidden group">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl group-hover:bg-teal-500/20 transition-all"></div>
-                <div class="flex items-center justify-between relative z-10">
+              <div class="bg-[#042f2e] rounded-3xl p-6 text-white shadow-xl border border-teal-500/30 flex flex-col justify-between space-y-5 fix-card-bg">
+                <div class="flex items-center justify-between">
                   <div class="flex items-center space-x-3.5">
                     <div class="w-12 h-12 rounded-2xl bg-teal-500/20 text-teal-300 flex items-center justify-center border border-teal-400/30 text-2xl shadow-inner shrink-0">
                       <i class="fa-solid fa-building-columns"></i>
                     </div>
                     <div>
                       <h3 class="font-black text-sm sm:text-base text-white tracking-wide uppercase">Saldo Kas Akumulatif Kelompok</h3>
-                      <p class="text-xs text-teal-200/80 font-medium">Khusus akumulasi kas internal kelompok</p>
+                      <p class="text-xs text-teal-200 font-medium">Khusus akumulasi kas internal kelompok</p>
                     </div>
                   </div>
                   <span class="hidden sm:inline-block px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider bg-teal-500/20 text-teal-300 rounded-xl border border-teal-400/30">
                     Kas Kelompok
                   </span>
                 </div>
-                <div class="bg-slate-950/70 backdrop-blur-md rounded-2xl p-4 border border-teal-400/20 shadow-inner flex items-center justify-end relative z-10">
+                <div class="bg-slate-900 rounded-2xl p-4 border border-teal-400/30 shadow-inner flex items-center justify-end">
                   <span id="kelompokBalance" class="text-2xl sm:text-3xl font-black text-white tracking-tight font-mono">Rp 0</span>
                 </div>
               </div>
             </div>
 
             <!-- Filter Bar -->
-            <div class="bg-white dark:bg-[#111c38] rounded-3xl p-5 sm:p-6 shadow-sm border border-slate-200/80 dark:border-slate-800 no-print space-y-4">
-              <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-3">
+            <div class="bg-white dark:bg-[#0f172a] rounded-3xl p-5 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-800 no-print space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <h3 class="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
                   <i class="fa-solid fa-filter text-emerald-500"></i> FILTER DATA ANALISIS
                 </h3>
@@ -413,24 +408,24 @@
                 <!-- Start Date -->
                 <div>
                   <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Dari Tanggal</label>
-                  <input type="date" id="filterStartDate" onchange="applyFilters('summary')" class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
+                  <input type="date" id="filterStartDate" onchange="applyFilters('summary')" class="w-full bg-slate-50 dark:bg-[#080e1e] border border-slate-300 dark:border-slate-700 rounded-2xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
                 </div>
 
                 <!-- End Date -->
                 <div>
                   <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Sampai Tanggal</label>
-                  <input type="date" id="filterEndDate" onchange="applyFilters('summary')" class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
+                  <input type="date" id="filterEndDate" onchange="applyFilters('summary')" class="w-full bg-slate-50 dark:bg-[#080e1e] border border-slate-300 dark:border-slate-700 rounded-2xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
                 </div>
 
                 <!-- Classification Multi Select -->
                 <div class="relative">
                   <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Klasifikasi Transaksi</label>
-                  <button type="button" id="categoryDropdownBtn" onclick="toggleCategoryDropdown()" class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl px-3.5 py-2.5 text-sm text-left flex items-center justify-between focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
+                  <button type="button" id="categoryDropdownBtn" onclick="toggleCategoryDropdown()" class="w-full bg-slate-50 dark:bg-[#080e1e] border border-slate-300 dark:border-slate-700 rounded-2xl px-3.5 py-2.5 text-sm text-left flex items-center justify-between focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
                     <span id="categoryDropdownLabel" class="truncate font-semibold">Semua Klasifikasi (18)</span>
                     <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
                   </button>
 
-                  <div id="categoryDropdownPanel" class="hidden absolute z-20 top-full left-0 right-0 mt-2 bg-white dark:bg-[#111c38] border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-3.5 space-y-2">
+                  <div id="categoryDropdownPanel" class="hidden absolute z-20 top-full left-0 right-0 mt-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-3.5 space-y-2">
                     <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 text-xs">
                       <button type="button" onclick="selectAllCategories(true, 'summary')" class="text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 font-bold">Pilih Semua</button>
                       <button type="button" onclick="selectAllCategories(false, 'summary')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-semibold">Hapus Semua</button>
@@ -444,7 +439,7 @@
                 <!-- Type -->
                 <div>
                   <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Jenis Arus Kas</label>
-                  <select id="filterType" onchange="applyFilters('summary')" class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl px-3.5 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
+                  <select id="filterType" onchange="applyFilters('summary')" class="w-full bg-slate-50 dark:bg-[#080e1e] border border-slate-300 dark:border-slate-700 rounded-2xl px-3.5 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
                     <option value="ALL">Semua (Debet & Kredit)</option>
                     <option value="debet">Pemasukan (Debet)</option>
                     <option value="kredit">Pengeluaran (Kredit)</option>
@@ -468,7 +463,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
               
               <!-- Income KPI -->
-              <div class="fin-card bg-white dark:bg-[#111c38] border border-emerald-200/80 dark:border-emerald-900/50 rounded-3xl p-5 shadow-sm space-y-3 relative overflow-hidden">
+              <div class="bg-white dark:bg-[#0f172a] border border-emerald-200 dark:border-emerald-900/50 rounded-3xl p-5 shadow-sm space-y-3 relative overflow-hidden">
                 <div class="w-1.5 h-full bg-emerald-500 absolute left-0 top-0"></div>
                 <div class="flex items-center justify-between">
                   <p class="text-xs font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
@@ -485,7 +480,7 @@
               </div>
 
               <!-- Expense KPI -->
-              <div class="fin-card bg-white dark:bg-[#111c38] border border-rose-200/80 dark:border-rose-900/50 rounded-3xl p-5 shadow-sm space-y-3 relative overflow-hidden">
+              <div class="bg-white dark:bg-[#0f172a] border border-rose-200 dark:border-rose-900/50 rounded-3xl p-5 shadow-sm space-y-3 relative overflow-hidden">
                 <div class="w-1.5 h-full bg-rose-500 absolute left-0 top-0"></div>
                 <div class="flex items-center justify-between">
                   <p class="text-xs font-black text-rose-700 dark:text-rose-400 uppercase tracking-wider">
@@ -502,7 +497,7 @@
               </div>
 
               <!-- Net Balance KPI -->
-              <div class="fin-card bg-white dark:bg-[#111c38] border border-indigo-200/80 dark:border-indigo-900/50 rounded-3xl p-5 shadow-sm space-y-3 relative overflow-hidden">
+              <div class="bg-white dark:bg-[#0f172a] border border-indigo-200 dark:border-indigo-900/50 rounded-3xl p-5 shadow-sm space-y-3 relative overflow-hidden">
                 <div class="w-1.5 h-full bg-indigo-500 absolute left-0 top-0"></div>
                 <div class="flex items-center justify-between">
                   <p class="text-xs font-black text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">Saldo Kas Periode</p>
@@ -523,7 +518,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               
               <!-- 1. Rasio Pengeluaran -->
-              <div class="bg-white dark:bg-[#111c38] border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1.5">
+              <div class="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1.5">
                 <div class="flex items-center justify-between text-slate-400 dark:text-slate-500 text-[11px] font-bold uppercase tracking-wider">
                   <span>Rasio Pengeluaran</span>
                   <i class="fa-solid fa-percent text-indigo-500"></i>
@@ -536,7 +531,7 @@
               </div>
 
               <!-- 2. Rata-rata Shodaqoh -->
-              <div class="bg-white dark:bg-[#111c38] border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1.5">
+              <div class="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1.5">
                 <div class="flex items-center justify-between text-slate-400 dark:text-slate-500 text-[11px] font-bold uppercase tracking-wider">
                   <span>Rata-rata Shodaqoh</span>
                   <i class="fa-solid fa-hand-holding-dollar text-emerald-500"></i>
@@ -546,7 +541,7 @@
               </div>
 
               <!-- 3. Rata-rata Pengeluaran -->
-              <div class="bg-white dark:bg-[#111c38] border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1.5">
+              <div class="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1.5">
                 <div class="flex items-center justify-between text-slate-400 dark:text-slate-500 text-[11px] font-bold uppercase tracking-wider">
                   <span>Rata-rata Pengeluaran</span>
                   <i class="fa-solid fa-receipt text-amber-500"></i>
@@ -556,7 +551,7 @@
               </div>
 
               <!-- 4. Total Semua Transaksi -->
-              <div class="bg-white dark:bg-[#111c38] border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1.5">
+              <div class="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1.5">
                 <div class="flex items-center justify-between text-slate-400 dark:text-slate-500 text-[11px] font-bold uppercase tracking-wider">
                   <span>Total Semua Transaksi</span>
                   <i class="fa-solid fa-list-check text-blue-500"></i>
@@ -572,7 +567,7 @@
               
               <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Chart 1: Income Breakdown -->
-                <div class="bg-white dark:bg-[#111c38] rounded-3xl p-6 shadow-sm border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+                <div class="bg-white dark:bg-[#0f172a] rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
                   <div class="flex items-center justify-between mb-4">
                     <h3 class="font-extrabold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-2 uppercase tracking-wide">
                       <i class="fa-solid fa-chart-pie text-emerald-500"></i> Pemasukan per Klasifikasi
@@ -585,7 +580,7 @@
                 </div>
 
                 <!-- Chart 2: Expense Breakdown -->
-                <div class="bg-white dark:bg-[#111c38] rounded-3xl p-6 shadow-sm border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+                <div class="bg-white dark:bg-[#0f172a] rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
                   <div class="flex items-center justify-between mb-4">
                     <h3 class="font-extrabold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-2 uppercase tracking-wide">
                       <i class="fa-solid fa-chart-pie text-rose-500"></i> Pengeluaran per Klasifikasi
@@ -599,7 +594,7 @@
               </div>
 
               <!-- Chart 3: Cashflow Line Chart (Transparent Area Curve) -->
-              <div class="bg-white dark:bg-[#111c38] rounded-3xl p-6 shadow-sm border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+              <div class="bg-white dark:bg-[#0f172a] rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="font-extrabold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-2 uppercase tracking-wide">
                     <i class="fa-solid fa-chart-line text-indigo-500"></i> Arus Kas Harian (Debet vs Kredit)
@@ -638,13 +633,13 @@
       <!-- SECTION 2: RINCIAN BUKU KAS -->
       <section id="bukuKasTabSection" class="hidden space-y-6">
 
-        <div class="bg-gradient-to-r from-emerald-900/90 via-slate-900 to-indigo-950 rounded-3xl p-6 text-white shadow-xl border border-emerald-500/20 relative overflow-hidden">
+        <div class="bg-[#0f172a] rounded-3xl p-6 text-white shadow-xl border border-slate-800 relative overflow-hidden fix-card-bg">
           <div class="relative z-10 text-left space-y-1.5">
             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
               Audit Buku Kas
             </span>
             <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight">Assalamu'alaikum Wr Wb</h2>
-            <div id="bukuKasGreetingText" class="text-xs sm:text-sm text-slate-300 leading-relaxed font-medium pt-1">
+            <div id="bukuKasGreetingText" class="text-xs sm:text-sm text-slate-200 leading-relaxed font-medium pt-1">
               Selamat datang, <strong id="bukuKasRoleName" class="text-emerald-400 font-bold underline text-xs sm:text-sm">Petugas KU (Arif F)</strong>!<br>
               Halaman ini dikhususkan bagi Ketua Pengawas dan KU Kelompok untuk meninjau rincian buku kas transaksi keuangan kelompok secara mendalam.
             </div>
@@ -655,7 +650,7 @@
 
           <!-- KPI Summary Panel for Buku Kas -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-white dark:bg-[#111c38] border border-emerald-200 dark:border-emerald-900/50 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+            <div class="bg-white dark:bg-[#0f172a] border border-emerald-200 dark:border-emerald-900/50 rounded-2xl p-4 shadow-sm flex items-center justify-between">
               <div>
                 <p class="text-[11px] font-extrabold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Total Debet (Pemasukan)</p>
                 <h3 id="bkIncomeSummary" class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-mono mt-1">Rp 0</h3>
@@ -665,7 +660,7 @@
               </div>
             </div>
 
-            <div class="bg-white dark:bg-[#111c38] border border-rose-200 dark:border-rose-900/50 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+            <div class="bg-white dark:bg-[#0f172a] border border-rose-200 dark:border-rose-900/50 rounded-2xl p-4 shadow-sm flex items-center justify-between">
               <div>
                 <p class="text-[11px] font-extrabold text-rose-700 dark:text-rose-400 uppercase tracking-wider">Total Kredit (Pengeluaran)</p>
                 <h3 id="bkExpenseSummary" class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-mono mt-1">Rp 0</h3>
@@ -675,7 +670,7 @@
               </div>
             </div>
 
-            <div class="bg-white dark:bg-[#111c38] border border-indigo-200 dark:border-indigo-900/50 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+            <div class="bg-white dark:bg-[#0f172a] border border-indigo-200 dark:border-indigo-900/50 rounded-2xl p-4 shadow-sm flex items-center justify-between">
               <div>
                 <p class="text-[11px] font-extrabold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">Saldo Akhir Periode</p>
                 <h3 id="bkBalanceSummary" class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-mono mt-1">Rp 0</h3>
@@ -687,8 +682,8 @@
           </div>
 
           <!-- Filter Bar for Buku Kas -->
-          <div class="bg-white dark:bg-[#111c38] rounded-3xl p-5 sm:p-6 shadow-sm border border-slate-200/80 dark:border-slate-800 no-print space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-3">
+          <div class="bg-white dark:bg-[#0f172a] rounded-3xl p-5 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-800 no-print space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <h3 class="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
                 <i class="fa-solid fa-filter text-emerald-500"></i> FILTER RINCIAN BUKU KAS
               </h3>
@@ -700,22 +695,22 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Dari Tanggal</label>
-                <input type="date" id="bkFilterStartDate" onchange="applyFilters('bk')" class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
+                <input type="date" id="bkFilterStartDate" onchange="applyFilters('bk')" class="w-full bg-slate-50 dark:bg-[#080e1e] border border-slate-300 dark:border-slate-700 rounded-2xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
               </div>
 
               <div>
                 <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Sampai Tanggal</label>
-                <input type="date" id="bkFilterEndDate" onchange="applyFilters('bk')" class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
+                <input type="date" id="bkFilterEndDate" onchange="applyFilters('bk')" class="w-full bg-slate-50 dark:bg-[#080e1e] border border-slate-300 dark:border-slate-700 rounded-2xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
               </div>
 
               <div class="relative">
                 <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Klasifikasi Transaksi</label>
-                <button type="button" id="bkCategoryDropdownBtn" onclick="toggleBkCategoryDropdown()" class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl px-3.5 py-2.5 text-sm text-left flex items-center justify-between focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
+                <button type="button" id="bkCategoryDropdownBtn" onclick="toggleBkCategoryDropdown()" class="w-full bg-slate-50 dark:bg-[#080e1e] border border-slate-300 dark:border-slate-700 rounded-2xl px-3.5 py-2.5 text-sm text-left flex items-center justify-between focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
                   <span id="bkCategoryDropdownLabel" class="truncate font-semibold">Semua Klasifikasi (18)</span>
                   <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
                 </button>
 
-                <div id="bkCategoryDropdownPanel" class="hidden absolute z-20 top-full left-0 right-0 mt-2 bg-white dark:bg-[#111c38] border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-3.5 space-y-2">
+                <div id="bkCategoryDropdownPanel" class="hidden absolute z-20 top-full left-0 right-0 mt-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-3.5 space-y-2">
                   <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 text-xs">
                     <button type="button" onclick="selectAllCategories(true, 'bk')" class="text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 font-bold">Pilih Semua</button>
                     <button type="button" onclick="selectAllCategories(false, 'bk')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-semibold">Hapus Semua</button>
@@ -728,7 +723,7 @@
 
               <div>
                 <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Jenis Arus Kas</label>
-                <select id="bkFilterType" onchange="applyFilters('bk')" class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl px-3.5 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
+                <select id="bkFilterType" onchange="applyFilters('bk')" class="w-full bg-slate-50 dark:bg-[#080e1e] border border-slate-300 dark:border-slate-700 rounded-2xl px-3.5 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
                   <option value="ALL">Semua (Debet & Kredit)</option>
                   <option value="debet">Pemasukan (Debet)</option>
                   <option value="kredit">Pengeluaran (Kredit)</option>
@@ -749,10 +744,10 @@
           </div>
 
           <!-- Table Container -->
-          <div class="bg-white dark:bg-[#111c38] rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
+          <div class="bg-white dark:bg-[#0f172a] rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
             
             <!-- Table Header & Tools -->
-            <div class="p-5 border-b border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 class="font-extrabold text-base text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-wide">
                   <i class="fa-solid fa-list-check text-emerald-500"></i> RINCIAN JURNAL TRANSAKSI BUKU KAS
@@ -763,7 +758,7 @@
               <div class="flex items-center gap-2.5 no-print">
                 <div class="relative flex-1 sm:w-64">
                   <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                  <input type="text" id="tableSearch" onkeyup="applyFilters('bk')" placeholder="Cari uraian / jamaah / petugas..." class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl pl-9 pr-3.5 py-2 text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
+                  <input type="text" id="tableSearch" onkeyup="applyFilters('bk')" placeholder="Cari uraian / jamaah / petugas..." class="w-full bg-slate-50 dark:bg-[#080e1e] border border-slate-300 dark:border-slate-700 rounded-2xl pl-9 pr-3.5 py-2 text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
                 </div>
 
                 <button onclick="exportToCSV()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-2xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm border border-slate-200 dark:border-slate-700">
@@ -776,7 +771,7 @@
             <div class="overflow-x-auto custom-scrollbar">
               <table class="w-full text-left border-collapse">
                 <thead>
-                  <tr class="bg-slate-50/80 dark:bg-[#080e1e]/80 text-slate-500 dark:text-slate-400 text-[11px] font-extrabold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                  <tr class="bg-slate-50 dark:bg-[#080e1e] text-slate-500 dark:text-slate-400 text-[11px] font-extrabold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
                     <th class="py-4 px-4">TGL</th>
                     <th class="py-4 px-4">KLASIFIKASI</th>
                     <th class="py-4 px-4">URAIAN / DETAIL TRANSAKSI</th>
@@ -786,14 +781,14 @@
                     <th class="py-4 px-4 text-right">SALDO</th>
                   </tr>
                 </thead>
-                <tbody id="transactionTableBody" class="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs">
+                <tbody id="transactionTableBody" class="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
                   <!-- Rows injected dynamically -->
                 </tbody>
               </table>
             </div>
 
             <!-- Table Footer Summary -->
-            <div class="p-4 sm:p-5 bg-slate-50/50 dark:bg-[#080e1e]/40 border-t border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 dark:text-slate-400 gap-3">
+            <div class="p-4 sm:p-5 bg-slate-50 dark:bg-[#080e1e] border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 dark:text-slate-400 gap-3">
               <div class="font-medium">
                 Menampilkan <span id="filteredCount" class="font-bold text-slate-800 dark:text-slate-100">0</span> dari <span id="totalCount" class="font-bold text-slate-800 dark:text-slate-100">0</span> transaksi
               </div>
@@ -824,13 +819,13 @@
       <!-- SECTION 3: INPUT TRANSAKSI -->
       <section id="inputTabSection" class="hidden max-w-4xl mx-auto space-y-6 no-print">
 
-        <div class="bg-gradient-to-r from-emerald-900/90 via-slate-900 to-indigo-950 rounded-3xl p-6 text-white shadow-xl border border-emerald-500/20 relative overflow-hidden">
+        <div class="bg-[#0f172a] rounded-3xl p-6 text-white shadow-xl border border-slate-800 relative overflow-hidden fix-card-bg">
           <div class="relative z-10 text-left space-y-1.5">
             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
               Form Input Akuntansi
             </span>
             <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight">Assalamu'alaikum Wr Wb</h2>
-            <div id="inputGreetingText" class="text-xs sm:text-sm text-slate-300 leading-relaxed font-medium pt-1">
+            <div id="inputGreetingText" class="text-xs sm:text-sm text-slate-200 leading-relaxed font-medium pt-1">
               Selamat datang, <strong id="inputRoleName" class="text-emerald-400 font-bold underline text-xs sm:text-sm">Petugas KU (Arif F)</strong>!<br>
               Halaman ini dikhususkan bagi tim Keuangan Kelompok untuk melakukan input transaksi keuangan kelompok.
             </div>
@@ -838,7 +833,7 @@
         </div>
 
         <!-- Input Form Card -->
-        <div id="inputFormCard" class="bg-white dark:bg-[#111c38] rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80 dark:border-slate-800 space-y-6">
+        <div id="inputFormCard" class="bg-white dark:bg-[#0f172a] rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-6">
             
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
               <div>
@@ -846,7 +841,7 @@
                   <i class="fa-solid fa-pen-to-square text-emerald-500"></i> Kelola Transaksi Keuangan
                 </h2>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Sesi Petugas Aktif: <span id="currentPetugasBadge" class="font-extrabold text-emerald-600 dark:text-emerald-400 uppercase bg-emerald-50 dark:bg-emerald-950/80 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">Arif F</span>
+                  Sesi Petugas Aktif: <span id="currentPetugasBadge" class="font-extrabold text-emerald-600 dark:text-emerald-400 uppercase bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">Arif F</span>
                 </p>
               </div>
             </div>
@@ -858,14 +853,14 @@
                   <label class="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1.5">
                     Tanggal Transaksi <span class="text-rose-500">*</span>
                   </label>
-                  <input type="date" id="inputDate" required class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl px-4 py-3 text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
+                  <input type="date" id="inputDate" required class="w-full bg-slate-50 dark:bg-[#080e1e] border border-slate-300 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
                 </div>
 
                 <div>
                   <label class="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1.5">
                     Jenis Arus Kas <span class="text-rose-500">*</span>
                   </label>
-                  <select id="inputType" required class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
+                  <select id="inputType" required class="w-full bg-slate-50 dark:bg-[#080e1e] border border-slate-300 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
                     <option value="debet" class="text-emerald-600 font-bold">Pemasukan (Debet)</option>
                     <option value="kredit" class="text-rose-600 font-bold">Pengeluaran (Kredit)</option>
                   </select>
@@ -877,7 +872,7 @@
                   <label class="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1.5">
                     Klasifikasi <span class="text-rose-500">*</span>
                   </label>
-                  <select id="inputCategory" onchange="toggleCategoryInputFields()" required class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl px-4 py-3 text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
+                  <select id="inputCategory" onchange="toggleCategoryInputFields()" required class="w-full bg-slate-50 dark:bg-[#080e1e] border border-slate-300 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
                     <option value="" disabled selected>-- Pilih Klasifikasi --</option>
                   </select>
                 </div>
@@ -888,7 +883,7 @@
                   </label>
                   <div class="relative">
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm font-mono">Rp</span>
-                    <input type="number" id="inputAmount" min="1" step="1" placeholder="150000" required class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl pl-11 pr-4 py-3 text-sm font-bold font-mono focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
+                    <input type="number" id="inputAmount" min="1" step="1" placeholder="150000" required class="w-full bg-slate-50 dark:bg-[#080e1e] border border-slate-300 dark:border-slate-700 rounded-2xl pl-11 pr-4 py-3 text-sm font-bold font-mono focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
                   </div>
                 </div>
               </div>
@@ -897,21 +892,21 @@
                 <label class="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1.5">
                   Detail Uraian Transaksi <span class="text-rose-500">*</span>
                 </label>
-                <input type="text" id="inputDescription" placeholder="Contoh: KONSUMSI MUSYAWAROH QURBAN" required class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
+                <input type="text" id="inputDescription" placeholder="Contoh: KONSUMSI MUSYAWAROH QURBAN" required class="w-full bg-slate-50 dark:bg-[#080e1e] border border-slate-300 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
               </div>
 
               <div id="inputJamaahGroup" class="hidden">
                 <label class="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1.5">
                   Nama Jamaah / Donatur / Penyetor <span class="text-rose-500">*</span>
                 </label>
-                <select id="inputJamaah" onchange="handleJamaahSelectChange()" class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl px-4 py-3 text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
+                <select id="inputJamaah" onchange="handleJamaahSelectChange()" class="w-full bg-slate-50 dark:bg-[#080e1e] border border-slate-300 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all">
                 </select>
 
-                <div id="newJamaahInputGroup" class="hidden mt-3 p-4 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl space-y-1.5">
+                <div id="newJamaahInputGroup" class="hidden mt-3 p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl space-y-1.5">
                   <label class="block text-xs font-extrabold text-emerald-800 dark:text-emerald-300">
                     <i class="fa-solid fa-user-plus mr-1"></i> Masukkan Nama Jamaah Baru <span class="text-rose-500">*</span>
                   </label>
-                  <input type="text" id="inputNewJamaah" placeholder="Contoh: AHMAD SUBARI" class="w-full bg-white dark:bg-[#0b1329] border border-emerald-300 dark:border-emerald-700 rounded-xl px-3.5 py-2.5 text-sm font-bold uppercase focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white">
+                  <input type="text" id="inputNewJamaah" placeholder="Contoh: AHMAD SUBARI" class="w-full bg-white dark:bg-[#080e1e] border border-emerald-300 dark:border-emerald-700 rounded-xl px-3.5 py-2.5 text-sm font-bold uppercase focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white">
                 </div>
               </div>
 
@@ -919,7 +914,7 @@
                 <label class="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1.5">
                   Lampiran Bukti Transaksi (Kuitansi / Nota / Foto) <span class="text-slate-400 text-[10px] font-normal">(Opsional)</span>
                 </label>
-                <input type="file" id="inputProofFile" accept="image/*,.pdf" class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl px-3.5 py-2 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-100 file:text-emerald-800 dark:file:bg-emerald-950 dark:file:text-emerald-300 transition-all">
+                <input type="file" id="inputProofFile" accept="image/*,.pdf" class="w-full bg-slate-50 dark:bg-[#080e1e] border border-slate-300 dark:border-slate-700 rounded-2xl px-3.5 py-2 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-100 file:text-emerald-800 dark:file:bg-emerald-950 dark:file:text-emerald-300 transition-all">
                 <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5">File akan otomatis diunggah dan disimpan ke folder Google Drive bersama dengan Google Sheet.</p>
               </div>
 
@@ -927,7 +922,7 @@
                 <label class="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1.5">
                   Keterangan Lainnya <span class="text-slate-400 text-[10px] font-normal">(Opsional)</span>
                 </label>
-                <textarea id="inputNotes" rows="2" placeholder="Nomor kuitansi, catatan khusus, transfer via bank, dsb..." class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all"></textarea>
+                <textarea id="inputNotes" rows="2" placeholder="Nomor kuitansi, catatan khusus, transfer via bank, dsb..." class="w-full bg-slate-50 dark:bg-[#080e1e] border border-slate-300 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white transition-all"></textarea>
               </div>
 
               <div class="flex items-center space-x-3 pt-3">
@@ -951,10 +946,10 @@
                 <span class="text-[11px] text-slate-400">Pengecekan & Koreksi Cepat</span>
               </div>
               
-              <div class="overflow-x-auto custom-scrollbar bg-slate-50/60 dark:bg-[#080e1e]/60 rounded-2xl border border-slate-200/80 dark:border-slate-800">
+              <div class="overflow-x-auto custom-scrollbar bg-slate-50 dark:bg-[#080e1e] rounded-2xl border border-slate-200 dark:border-slate-800">
                 <table class="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr class="bg-slate-100/80 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 font-extrabold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                    <tr class="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-extrabold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
                       <th class="py-3 px-3.5">TGL</th>
                       <th class="py-3 px-3.5">KLASIFIKASI</th>
                       <th class="py-3 px-3.5">URAIAN / JAMAAH</th>
@@ -963,7 +958,7 @@
                       <th class="py-3 px-3.5 text-center">AKSI</th>
                     </tr>
                   </thead>
-                  <tbody id="recentTxTableBody" class="divide-y divide-slate-200/60 dark:divide-slate-800/60 font-medium">
+                  <tbody id="recentTxTableBody" class="divide-y divide-slate-200 dark:divide-slate-800 font-medium">
                   </tbody>
                 </table>
               </div>
@@ -986,13 +981,13 @@
       <!-- SECTION 4: REKAP DOKUMEN -->
       <section id="rekapTabSection" class="hidden space-y-6">
 
-        <div class="bg-gradient-to-r from-emerald-900/90 via-slate-900 to-indigo-950 rounded-3xl p-6 text-white shadow-xl border border-emerald-500/20 relative overflow-hidden">
+        <div class="bg-[#0f172a] rounded-3xl p-6 text-white shadow-xl border border-slate-800 relative overflow-hidden fix-card-bg">
           <div class="relative z-10 text-left space-y-1.5">
             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
               Arsip & Rekap Dokumen
             </span>
             <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight">Assalamu'alaikum Wr Wb</h2>
-            <div id="rekapGreetingText" class="text-xs sm:text-sm text-slate-300 leading-relaxed font-medium pt-1">
+            <div id="rekapGreetingText" class="text-xs sm:text-sm text-slate-200 leading-relaxed font-medium pt-1">
               Selamat datang, <strong id="rekapRoleName" class="text-emerald-400 font-bold underline text-xs sm:text-sm">Petugas KU (Arif F)</strong>!<br>
               Halaman ini dikhususkan untuk mendownload dan mengakses berkas dokumen rekapan pengoreksian Keuangan Kelompok.
             </div>
@@ -1000,7 +995,7 @@
         </div>
 
         <div id="rekapContent" class="max-w-3xl mx-auto space-y-6">
-          <div class="bg-white dark:bg-[#111c38] rounded-3xl p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm text-center space-y-6 relative overflow-hidden">
+          <div class="bg-white dark:bg-[#0f172a] rounded-3xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm text-center space-y-6 relative overflow-hidden">
             <div class="w-20 h-20 bg-gradient-to-tr from-emerald-600 to-teal-500 text-white rounded-3xl flex items-center justify-center text-3xl mx-auto shadow-xl shadow-emerald-500/20 border border-emerald-400/30">
               <i class="fa-solid fa-file-pdf"></i>
             </div>
@@ -1061,25 +1056,25 @@
             </div>
 
             <!-- Card Rekening Info -->
-            <div class="bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900 rounded-3xl p-6 text-white space-y-5 border border-emerald-500/30 shadow-xl relative overflow-hidden">
-              <div class="flex items-center justify-between border-b border-emerald-500/20 pb-3">
-                <span class="text-xs font-black uppercase tracking-wider text-emerald-400">BANK JAGO SYARIAH</span>
-                <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-400/30 font-extrabold font-mono">Kode Bank: 542</span>
+            <div class="bg-gradient-to-br from-emerald-900 via-teal-950 to-slate-900 rounded-3xl p-6 text-white space-y-5 border border-emerald-500/30 shadow-xl relative overflow-hidden">
+              <div class="flex items-center justify-between border-b border-emerald-500/30 pb-3">
+                <span class="text-xs font-black uppercase tracking-wider text-emerald-300">BANK JAGO SYARIAH</span>
+                <span class="text-[10px] bg-emerald-500/20 text-emerald-200 px-2.5 py-0.5 rounded-full border border-emerald-400/30 font-extrabold font-mono">Kode Bank: 542</span>
               </div>
 
               <div class="space-y-1">
-                <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Nomor Rekening</p>
+                <p class="text-[11px] text-emerald-200 font-semibold uppercase tracking-wider">Nomor Rekening</p>
                 <div class="flex items-center justify-between gap-3">
                   <span class="text-2xl sm:text-3xl font-black font-mono text-white tracking-widest">505394744846</span>
-                  <button onclick="copyRekeningNumber()" class="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition-all shadow-md active:scale-95 flex items-center gap-1.5 shrink-0">
+                  <button onclick="copyRekeningNumber()" class="px-3.5 py-2 bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold rounded-xl text-xs transition-all shadow-md active:scale-95 flex items-center gap-1.5 shrink-0">
                     <i class="fa-solid fa-copy"></i> Salin
                   </button>
                 </div>
               </div>
 
-              <div class="pt-2 border-t border-emerald-500/20 flex items-center justify-between text-xs">
-                <span class="text-slate-400 font-medium">Atas Nama (a.n):</span>
-                <span class="font-extrabold text-emerald-300 uppercase tracking-wide">Arif Firmansyah</span>
+              <div class="pt-2 border-t border-emerald-500/30 flex items-center justify-between text-xs">
+                <span class="text-emerald-200 font-medium">Atas Nama (a.n):</span>
+                <span class="font-extrabold text-white uppercase tracking-wide">Arif Firmansyah</span>
               </div>
             </div>
 
@@ -1093,38 +1088,56 @@
               </ul>
             </div>
 
-            <!-- SEPARATOR -->
-            <div class="relative py-2">
-              <div class="absolute inset-0 flex items-center" aria-hidden="true">
-                <div class="w-full border-t border-slate-200 dark:border-slate-800"></div>
-              </div>
-              <div class="relative flex justify-center text-xs uppercase">
-                <span class="bg-white dark:bg-[#111c38] px-3 font-extrabold text-slate-400 dark:text-slate-500 tracking-wider">
-                  <i class="fa-solid fa-bullhorn mr-1 text-emerald-500"></i> Pengumuman & Informasi Kelompok
+            <!-- QR CODE INFORMASI REKENING INFAQ & SHODAQOH -->
+            <div class="bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 text-center space-y-4 shadow-sm relative overflow-hidden">
+              <div class="space-y-1">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-800">
+                  QR Code Informasi Scannable
                 </span>
+                <h4 class="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight pt-1">
+                  Infaq & Shodaqoh Kelompok SKB 1
+                </h4>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Pindai QR ini untuk membaca detail rekening transfer</p>
               </div>
-            </div>
 
-            <!-- INFORMASI TAMBAHAN / PENGUMUMAN KELOMPOK -->
-            <div class="space-y-4 pt-1">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h4 class="font-black text-sm text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
-                    <i class="fa-solid fa-newspaper text-emerald-600 dark:text-emerald-400"></i> InformasiKU / Kegiatan Keuangan
-                  </h4>
-                  <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Jadwal pengoreksian & agenda kegiatan keuangan kelompok</p>
-                </div>
-                <button type="button" onclick="openAddInfoModal()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 shrink-0">
-                  <i class="fa-solid fa-plus"></i> Tambah Informasi
+              <!-- Container Output QR Code Generator -->
+              <div class="p-4 bg-white rounded-2xl inline-block border border-slate-200 shadow-md">
+                <div id="qrCodeContainer" class="flex items-center justify-center"></div>
+              </div>
+
+              <p class="text-[10px] text-slate-400 dark:text-slate-500 font-mono italic">
+                * QR informasi rekening — dapat dipindai oleh seluruh aplikasi pemindai QR / kamera HP
+              </p>
+
+              <div>
+                <button type="button" onclick="downloadQRCodeImage()" class="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-2xl text-xs transition-all shadow-md shadow-emerald-600/20 active:scale-95 inline-flex items-center gap-2">
+                  <i class="fa-solid fa-download"></i> Download Gambar QR Rekening
                 </button>
               </div>
-
-              <!-- Container List Informasi -->
-              <div id="infoListContainer" class="space-y-3">
-                <!-- Populated dynamically -->
-              </div>
             </div>
 
+          </div>
+        </div>
+
+        <!-- SEPARATE CARD CONTAINER: INFORMASI TAMBAHAN / PENGUMUMAN KELOMPOK -->
+        <div class="max-w-3xl mx-auto space-y-6">
+          <div class="bg-white dark:bg-[#111c38] rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-5 relative overflow-hidden">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div>
+                <h4 class="font-black text-base text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
+                  <i class="fa-solid fa-bullhorn text-emerald-600 dark:text-emerald-400"></i> InformasiKU / Kegiatan Keuangan
+                </h4>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium pt-0.5">Jadwal pengoreksian & agenda kegiatan keuangan kelompok</p>
+              </div>
+              <button type="button" onclick="openAddInfoModal()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 shrink-0">
+                <i class="fa-solid fa-plus"></i> Tambah Informasi
+              </button>
+            </div>
+
+            <!-- Container List Informasi -->
+            <div id="infoListContainer" class="space-y-3">
+              <!-- Populated dynamically -->
+            </div>
           </div>
         </div>
 
@@ -1135,7 +1148,7 @@
   </div>
 
   <!-- Toast Success Notification -->
-  <div id="toastSuccess" class="hidden fixed bottom-5 right-5 z-50 bg-emerald-950/90 backdrop-blur-md border border-emerald-500/50 p-4 rounded-2xl text-emerald-200 text-xs font-semibold shadow-2xl flex items-center justify-between space-x-3 max-w-md">
+  <div id="toastSuccess" class="hidden fixed bottom-5 right-5 z-50 bg-slate-900 border border-emerald-500/50 p-4 rounded-2xl text-emerald-200 text-xs font-semibold shadow-2xl flex items-center justify-between space-x-3 max-w-md">
     <span class="flex items-center gap-2">
       <i class="fa-solid fa-circle-check text-base text-emerald-400"></i>
       <span id="toastMsg">Transaksi berhasil disimpan!</span>
@@ -1167,12 +1180,12 @@
       <form onsubmit="handleSaveInformasi(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Tanggal Informasi / Kegiatan <span class="text-rose-500">*</span></label>
-          <input type="date" id="infoTanggalInput" required class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl px-3.5 py-2.5 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white">
+          <input type="date" id="infoTanggalInput" required class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700 rounded-2xl px-3.5 py-2.5 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white">
         </div>
 
         <div>
           <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Isi Informasi / Agenda <span class="text-rose-500">*</span></label>
-          <textarea id="infoTextarea" rows="4" placeholder="Tuliskan pengumuman atau agenda kegiatan keuangan di sini..." required class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl p-3.5 text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white"></textarea>
+          <textarea id="infoTextarea" rows="4" placeholder="Tuliskan pengumuman atau agenda kegiatan keuangan di sini..." required class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700 rounded-2xl p-3.5 text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white"></textarea>
         </div>
 
         <div class="flex items-center gap-3 pt-2">
@@ -1213,7 +1226,7 @@
           <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Password Lama <span class="text-rose-500">*</span></label>
           <div class="relative">
             <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            <input type="password" id="oldPasswordInput" required placeholder="Masukkan password lama..." class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl pl-10 pr-10 py-3 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white">
+            <input type="password" id="oldPasswordInput" required placeholder="Masukkan password lama..." class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700 rounded-2xl pl-10 pr-10 py-3 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white">
             <button type="button" onclick="togglePasswordVisibility('oldPasswordInput', 'oldPassEyeIcon')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none">
               <i id="oldPassEyeIcon" class="fa-solid fa-eye text-xs"></i>
             </button>
@@ -1224,7 +1237,7 @@
           <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Password Baru <span class="text-rose-500">*</span></label>
           <div class="relative">
             <i class="fa-solid fa-key absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            <input type="password" id="newPasswordInput" minlength="5" required placeholder="Minimal 5 karakter..." class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl pl-10 pr-10 py-3 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white">
+            <input type="password" id="newPasswordInput" minlength="5" required placeholder="Minimal 5 karakter..." class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700 rounded-2xl pl-10 pr-10 py-3 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white">
             <button type="button" onclick="togglePasswordVisibility('newPasswordInput', 'newPassEyeIcon')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none">
               <i id="newPassEyeIcon" class="fa-solid fa-eye text-xs"></i>
             </button>
@@ -1235,7 +1248,7 @@
           <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Konfirmasi Password Baru <span class="text-rose-500">*</span></label>
           <div class="relative">
             <i class="fa-solid fa-check-double absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            <input type="password" id="confirmNewPasswordInput" minlength="5" required placeholder="Ulangi password baru..." class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700/80 rounded-2xl pl-10 pr-10 py-3 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white">
+            <input type="password" id="confirmNewPasswordInput" minlength="5" required placeholder="Ulangi password baru..." class="w-full bg-slate-50 dark:bg-[#0b1329] border border-slate-300 dark:border-slate-700 rounded-2xl pl-10 pr-10 py-3 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white">
             <button type="button" onclick="togglePasswordVisibility('confirmNewPasswordInput', 'confirmPassEyeIcon')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none">
               <i id="confirmPassEyeIcon" class="fa-solid fa-eye text-xs"></i>
             </button>
@@ -1315,16 +1328,24 @@
   <!-- ==================== JAVASCRIPT LOGIC ==================== -->
   <script>
     // ENDPOINTS
-    const USER_SHEETS_URL = "https://script.google.com/macros/s/AKfycbycnHCuDoV9g3bWhzzI2LZxMoAeh9QuajN5EHkhfYlUh6TKfWhOFm-6wcp7CuNIF0RaBg/exec";
-    const TRANSACTION_SHEETS_URL = "https://script.google.com/macros/s/AKfycbzRPjRxxcNYpaD3tvXK7Rz5tMoEdw3S5aUGh6lPb1DdTvLX6kgFA8xFkarEKesIZVed/exec";
+    const USER_SHEETS_URL = "https://script.google.com/macros/s/AKfycbxFWquCku8RTLpoQmgsfiHt6BTkN1zcXWEg5JWYaTbUSRcON8u1fP7bF5YhuD6ZtAmUsA/exec";
+    const TRANSACTION_SHEETS_URL = "https://script.google.com/macros/s/AKfycbw8HI-xt8XDkmsjNd_Cr_rxe7Yd3Rt2ofGtV_jdYW3pwpfeAoTS6Z_SDftf7wiHaRrv/exec";
 
+    // GLOBAL APPLICATION STATE & CONSTANTS
     const ALL_CATEGORIES = [
-      "KH FR", "KH Shod Daerah", "KH Shod Desa", "KH Shod Kelompok",
-      "KH Infaq", "Shodaqoh", "Tabungan Kurban", "Program",
-      "Konsumsi", "Operasional", "Pembangunan", "Perlengkapan",
-      "Setoran KU", "Pinjaman/Piutang", "Ukhro", "Lain-lain",
-      "Lain-lain Desa", "Lain-lain Daerah"
+      "KH FR", "KH Shod Daerah", "KH Shod Desa", "KH Shod Kelompok", "KH Infaq",
+      "Shodaqoh", "Tabungan Kurban", "Program", "Konsumsi", "Operasional",
+      "Pembangunan", "Perlengkapan", "Setoran KU", "Pinjaman/Piutang", "Ukhro",
+      "Lain-lain", "Lain-lain Desa", "Lain-lain Daerah"
     ];
+
+    const KELOMPOK_CATEGORIES = [
+      "KH Shod Kelompok", "KH Infaq", "Shodaqoh", "Tabungan Kurban",
+      "Program", "Konsumsi", "Operasional", "Pembangunan", "Perlengkapan",
+      "Pinjaman/Piutang", "Ukhro", "Lain-lain"
+    ];
+
+    const JAMAHA_CATEGORIES = ["Shodaqoh", "Tabungan Kurban", "Setoran KU"];
 
     const defaultJamaahList = [
       "ACHMAD NUR ALAMSYAH", "ANDY WAHYU BUDY ARTO", "ARIF FIRMANSYAH", "AZIZA ISMALITA PUTRI", 
@@ -1335,552 +1356,582 @@
       "SYAFRIZAL", "TRI MUHAMMAD PAMUNGKAS", "TULUS", "WAHYOE OETOMO ALWAFFIY"
     ];
 
-    const JAMAHA_CATEGORIES = [
-      'KH FR', 'KH Shod Daerah', 'KH Shod Desa', 'KH Shod Kelompok',
-      'KH Infaq', 'Tabungan Kurban', 'Program', 'Ukhro',
-      'Lain-lain Desa', 'Lain-lain Daerah'
-    ];
-
-    const KELOMPOK_CATEGORIES = [
-      'KH Shod Kelompok', 'KH Infaq', 'Shodaqoh', 'Program',
-      'Konsumsi', 'Operasional', 'Pembangunan', 'Perlengkapan',
-      'Pinjaman/Piutang', 'Ukhro', 'Lain-lain'
-    ];
-
-    // Global App State
-    let jamaahList = [];
     let transactions = [];
-    let informasiList = [
-      { id: "info-1", no: 1, informasi: "Pengoreksian Keuangan Kelompok akan dilakukan di Masjid Baitul Haq pada tanggal 7 November 2026 pada pukul 11.00 WIB", tanggal: "07/11/2026" },
-      { id: "info-2", no: 2, informasi: "Setoran KU kelompok ke desa di Masjid Baitul Hasan akan dilakukan pada tanggal 7 November 2026 pada pukul 13.00-16.00 WIB", tanggal: "07/11/2026" }
-    ];
-    let editingInfoId = null;
-    let isLoading = false;
-    
-    let currentAccountUser = ""; 
-    let currentUserRole = ""; 
-    let currentPetugas = "";
+    let jamaahList = [...defaultJamaahList];
+    let informasiList = [];
+
+    let currentAccountUser = "";
+    let currentUserRole = "Petugas KU";
+    let currentPetugas = "Arif F"; // Stores Full Name of User
     let currentPassword = "";
-    let allowedTabs = [];
-    let activeTab = "summary";
+    let allowedTabs = ['summary', 'bukukas', 'input', 'rekap', 'info'];
 
     let failedLoginAttempts = 0;
     const MAX_LOGIN_ATTEMPTS = 3;
 
+    let isLoading = false;
+    let activeTab = 'summary';
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = 15;
+
     let editingTxId = null;
     let pendingDeleteId = null;
+    let editingInfoId = null;
 
     let categoryIncomeChartInstance = null;
     let categoryExpenseChartInstance = null;
     let trendChartInstance = null;
 
-    let currentPage = 1;
-    const ITEMS_PER_PAGE = 20;
-
-    // Formatting & Utility Helpers
-    function formatRupiah(amount) {
-      return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-      }).format(amount || 0);
-    }
-
+    // Helper Utility Functions
     function parseNumericAmount(val) {
+      if (val === null || val === undefined) return 0;
       if (typeof val === 'number') return isNaN(val) ? 0 : val;
-      if (!val) return 0;
       const str = String(val).replace(/[^0-9.-]/g, '');
-      const num = parseFloat(str);
-      return isNaN(num) ? 0 : num;
+      const parsed = parseFloat(str);
+      return isNaN(parsed) ? 0 : parsed;
     }
 
-    function parseDDMMYYYYtoISO(dateStr) {
-      if (!dateStr) return '';
-      const str = String(dateStr).trim();
-
-      if (str.includes('T')) {
-        const d = new Date(str);
-        if (!isNaN(d.getTime())) {
-          const day = String(d.getDate()).padStart(2, '0');
-          const month = String(d.getMonth() + 1).padStart(2, '0');
-          const year = d.getFullYear();
-          return `${year}-${month}-${day}`;
-        }
-      }
-
-      if (str.includes('/')) {
-        const parts = str.split('/');
-        if (parts.length === 3) {
-          let day, month, year;
-          if (parts[0].length === 4) {
-            year = parts[0];
-            month = parts[1].padStart(2, '0');
-            day = parts[2].padStart(2, '0');
-          } else {
-            day = parts[0].padStart(2, '0');
-            month = parts[1].padStart(2, '0');
-            year = parts[2].length === 2 ? '20' + parts[2] : parts[2];
-          }
-          return `${year}-${month}-${day}`;
-        }
-      }
-
-      if (str.includes('-')) {
-        const cleanStr = str.split('T')[0];
-        const parts = cleanStr.split('-');
-        if (parts.length === 3) {
-          if (parts[0].length === 4) {
-            return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
-          } else {
-            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-          }
-        }
-      }
-      return str;
+    function formatRupiah(number) {
+      const num = parseNumericAmount(number);
+      return 'Rp ' + Math.abs(num).toLocaleString('id-ID');
     }
 
     function parseISOtoDDMMYYYY(isoStr) {
       if (!isoStr) return '';
-      const str = String(isoStr).trim().split('T')[0];
-      if (str.includes('-')) {
-        const parts = str.split('-');
-        if (parts.length === 3) {
-          return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[0]}`;
-        }
+      const parts = isoStr.split('-');
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
       }
-      return str;
+      return isoStr;
     }
 
-    function normalizeDateToDDMMYYYY(dateStr) {
-      if (!dateStr) return '';
-      const str = String(dateStr).trim();
-      
+    function parseDDMMYYYYtoISO(dmyStr) {
+      if (!dmyStr) return '';
+      const parts = dmyStr.split('/');
+      if (parts.length === 3) {
+        return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+      }
+      return dmyStr;
+    }
+
+    function normalizeDateToDDMMYYYY(rawDate) {
+      if (!rawDate) return '';
+      if (rawDate instanceof Date) {
+        const dd = String(rawDate.getDate()).padStart(2, '0');
+        const mm = String(rawDate.getMonth() + 1).padStart(2, '0');
+        const yyyy = rawDate.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+      }
+      const str = String(rawDate).trim();
       if (str.includes('T')) {
-        const d = new Date(str);
-        if (!isNaN(d.getTime())) {
-          const day = String(d.getDate()).padStart(2, '0');
-          const month = String(d.getMonth() + 1).padStart(2, '0');
-          const year = d.getFullYear();
-          return `${day}/${month}/${year}`;
-        }
+        const isoPart = str.split('T')[0];
+        return parseISOtoDDMMYYYY(isoPart);
       }
-
-      if (str.includes('/')) {
-        const parts = str.split('/');
-        if (parts.length === 3) {
-          if (parts[0].length === 4) {
-            return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[0]}`;
-          }
-          const day = parts[0].padStart(2, '0');
-          const month = parts[1].padStart(2, '0');
-          const year = parts[2].length === 2 ? '20' + parts[2] : parts[2];
-          return `${day}/${month}/${year}`;
-        }
-      }
-      
       if (str.includes('-')) {
-        const parts = str.split('T')[0].split('-');
-        if (parts.length === 3) {
-          if (parts[0].length === 4) {
-            return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[0]}`;
-          }
-          const year = parts[2].length === 2 ? '20' + parts[2] : parts[2];
-          const month = parts[1].padStart(2, '0');
-          const day = parts[0].padStart(2, '0');
-          return `${day}/${month}/${year}`;
-        }
+        return parseISOtoDDMMYYYY(str);
       }
       return str;
     }
 
-    function showToast(message) {
+    function showToast(msg) {
       const toast = document.getElementById('toastSuccess');
       const toastMsg = document.getElementById('toastMsg');
       if (toast && toastMsg) {
-        toastMsg.textContent = message;
+        toastMsg.textContent = msg;
         toast.classList.remove('hidden');
         setTimeout(() => {
           toast.classList.add('hidden');
-        }, 5000);
+        }, 4000);
       }
     }
 
-    function togglePasswordVisibility(inputId, iconId) {
+    // Toggle Password Input Visibility
+    function togglePasswordVisibility(inputId, eyeIconId) {
       const input = document.getElementById(inputId);
-      const icon = document.getElementById(iconId);
+      const icon = document.getElementById(eyeIconId);
       if (!input || !icon) return;
       if (input.type === 'password') {
         input.type = 'text';
-        icon.className = 'fa-solid fa-eye-slash text-xs sm:text-sm';
+        icon.className = 'fa-solid fa-eye-slash text-sm';
       } else {
         input.type = 'password';
-        icon.className = 'fa-solid fa-eye text-xs sm:text-sm';
+        icon.className = 'fa-solid fa-eye text-sm';
       }
     }
 
-    function parseAccessibilityStringToTabs(accStr) {
-      if (!accStr) return ['summary'];
-      const str = String(accStr).toLowerCase();
+    // Convert Access String into Allowed Tabs Array
+    function parseAksesString(aksesStr, roleStr) {
+      const inputStr = String(aksesStr || '').trim().toLowerCase();
+      const role = String(roleStr || '').trim().toLowerCase();
+
+      if (!aksesStr || inputStr.includes('semua') || inputStr.includes('full') || inputStr.includes('admin') || role.includes('admin') || role.includes('petugas ku')) {
+        return ['summary', 'bukukas', 'input', 'rekap', 'info'];
+      }
+
       const tabs = [];
-      if (str.includes('ringkasan')) tabs.push('summary');
-      if (str.includes('rincian') || str.includes('buku kas')) tabs.push('bukukas');
-      if (str.includes('input')) tabs.push('input');
-      if (str.includes('rekap')) tabs.push('rekap');
-      if (str.includes('informasi') || str.includes('info')) tabs.push('info');
-      return tabs.length > 0 ? tabs : ['summary'];
+      if (inputStr.includes('ringkasan') || inputStr.includes('analisis') || inputStr.includes('summary')) tabs.push('summary');
+      if (inputStr.includes('rincian') || inputStr.includes('buku kas') || inputStr.includes('bukukas')) tabs.push('bukukas');
+      if (inputStr.includes('input')) tabs.push('input');
+      if (inputStr.includes('rekap')) tabs.push('rekap');
+      if (inputStr.includes('informasi') || inputStr.includes('info')) tabs.push('info');
+
+      return tabs.length > 0 ? tabs : ['summary', 'bukukas', 'input', 'rekap', 'info'];
     }
 
-    function openChangePasswordModal() {
-      const modal = document.getElementById('changePasswordModal');
-      const userBadge = document.getElementById('changePassUsernameBadge');
-      const errEl = document.getElementById('changePassErrorMsg');
-      
-      if (userBadge) userBadge.textContent = currentAccountUser || currentPetugas;
-      if (errEl) errEl.classList.add('hidden');
+    // Update Lock Icons on Sidebar according to user accessibility
+    function updateSidebarLockIcons() {
+      const tabLockIds = {
+        summary: 'navSummaryLockIcon',
+        bukukas: 'navBukuKasLockIcon',
+        input: 'navInputLockIcon',
+        rekap: 'navRekapLockIcon',
+        info: 'navInfoLockIcon'
+      };
 
-      document.getElementById('oldPasswordInput').value = '';
-      document.getElementById('newPasswordInput').value = '';
-      document.getElementById('confirmNewPasswordInput').value = '';
+      const navBtnIds = {
+        summary: 'navSummaryBtn',
+        bukukas: 'navBukuKasBtn',
+        input: 'navInputBtn',
+        rekap: 'navRekapBtn',
+        info: 'navInfoBtn'
+      };
 
-      if (modal) modal.classList.remove('hidden');
+      Object.keys(tabLockIds).forEach(tab => {
+        const lockIcon = document.getElementById(tabLockIds[tab]);
+        const btn = document.getElementById(navBtnIds[tab]);
+
+        const isAllowed = allowedTabs.includes(tab);
+
+        if (lockIcon) {
+          if (isAllowed) {
+            lockIcon.className = "fa-solid fa-check text-xs text-emerald-500 ml-1";
+          } else {
+            lockIcon.className = "fa-solid fa-lock text-xs text-rose-400 dark:text-rose-500 ml-1";
+          }
+        }
+
+        if (btn) {
+          if (!isAllowed) {
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            btn.setAttribute('title', 'Akses dibatasi untuk akun Anda');
+          } else {
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            btn.removeAttribute('title');
+          }
+        }
+      });
     }
 
-    function closeChangePasswordModal() {
-      const modal = document.getElementById('changePasswordModal');
-      if (modal) modal.classList.add('hidden');
+    // Handle Front Login
+    async function handleFrontLogin(e) {
+      if (e && e.preventDefault) e.preventDefault();
+
+      if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS) {
+        document.getElementById('maxLoginAttemptsModal').classList.remove('hidden');
+        return false;
+      }
+
+      const usernameInput = document.getElementById('frontLoginUsername').value.trim();
+      const passwordInput = document.getElementById('frontLoginPassword').value;
+      const errorMsg = document.getElementById('frontLoginErrorMsg');
+      const errorText = document.getElementById('frontLoginErrorText');
+      const btnText = document.getElementById('frontLoginBtnText');
+      const loginBtn = document.getElementById('frontLoginBtn');
+
+      if (errorMsg) errorMsg.classList.add('hidden');
+
+      if (!usernameInput || !passwordInput) {
+        if (errorMsg && errorText) {
+          errorText.textContent = "Username dan Password wajib diisi!";
+          errorMsg.classList.remove('hidden');
+        }
+        return false;
+      }
+
+      loginBtn.disabled = true;
+      if (btnText) btnText.textContent = "Verifikasi Akun...";
+
+      try {
+        let authenticated = false;
+        let matchedUser = usernameInput;
+        let userFullName = usernameInput;
+        let role = "Petugas KU";
+        let userTabs = ['summary', 'bukukas', 'input', 'rekap', 'info'];
+
+        // Strict verification against Google Apps Script User Management API
+        if (USER_SHEETS_URL) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+            const loginApiUrl = `${USER_SHEETS_URL}?action=login&username=${encodeURIComponent(usernameInput)}&user=${encodeURIComponent(usernameInput)}&password=${encodeURIComponent(passwordInput)}`;
+
+            const res = await fetch(loginApiUrl, {
+              signal: controller.signal,
+              redirect: 'follow'
+            });
+            clearTimeout(timeoutId);
+
+            if (res.ok) {
+              const resText = await res.text();
+              if (resText.trim().startsWith('{')) {
+                const resData = JSON.parse(resText);
+                if (resData.status === 'success' || resData.authenticated === true) {
+                  authenticated = true;
+                  matchedUser = resData.username || resData.userData?.user || usernameInput;
+                  userFullName = resData.nama || resData.userData?.nama || matchedUser;
+                  role = resData.role || resData.userData?.role || "Petugas KU";
+
+                  if (Array.isArray(resData.tabs) && resData.tabs.length > 0) {
+                    userTabs = resData.tabs;
+                  } else if (resData.aksesibilitas || (resData.userData && resData.userData.aksesibilitas)) {
+                    userTabs = parseAksesString(resData.aksesibilitas || resData.userData.aksesibilitas, role);
+                  }
+                }
+              }
+            }
+          } catch (fetchErr) {
+            console.warn("Spreadsheet authentication request failed or timed out:", fetchErr);
+          }
+        }
+
+        if (authenticated) {
+          failedLoginAttempts = 0;
+          currentAccountUser = matchedUser;
+          currentUserRole = role;
+          currentPetugas = userFullName; // Direct assignment of Full Name from Spreadsheet
+          currentPassword = passwordInput;
+          allowedTabs = userTabs;
+
+          // Hide Login Modal & Reveal App Interface
+          document.getElementById('frontLoginModal').classList.add('hidden');
+          document.getElementById('mainAppHeader').classList.remove('hidden');
+          document.getElementById('mainAppWrapper').classList.remove('hidden');
+
+          // Update UI Labels using Role & Full Name from Spreadsheet
+          const badges = ['currentPetugasBadge', 'changePassUsernameBadge'];
+          badges.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = currentPetugas;
+          });
+
+          const roles = ['summaryRoleName', 'bukuKasRoleName', 'inputRoleName', 'rekapRoleName', 'infoRoleName'];
+          roles.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = `${currentUserRole} (${currentPetugas})`;
+          });
+
+          updateSidebarLockIcons();
+
+          const initialTab = allowedTabs.includes('summary') ? 'summary' : allowedTabs[0];
+          showToast(`Selamat datang, ${currentPetugas}!`);
+          trySwitchTab(initialTab);
+        } else {
+          failedLoginAttempts++;
+          if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS) {
+            document.getElementById('maxLoginAttemptsModal').classList.remove('hidden');
+          } else {
+            if (errorMsg && errorText) {
+              errorText.textContent = `Username atau Password salah! (Percobaan ${failedLoginAttempts}/${MAX_LOGIN_ATTEMPTS})`;
+              errorMsg.classList.remove('hidden');
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Login process error:", err);
+        if (errorMsg && errorText) {
+          errorText.textContent = "Terjadi kesalahan saat verifikasi login. Silakan coba lagi.";
+          errorMsg.classList.remove('hidden');
+        }
+      } finally {
+        loginBtn.disabled = false;
+        if (btnText) btnText.textContent = "Masuk Aplikasi";
+      }
+
+      return false;
     }
 
     function closeMaxLoginAttemptsModal() {
-      const modal = document.getElementById('maxLoginAttemptsModal');
-      if (modal) modal.classList.add('hidden');
-    }
-
-    async function handleChangePasswordSubmit(e) {
-      if (e && e.preventDefault) e.preventDefault();
-
-      const oldPass = document.getElementById('oldPasswordInput').value.trim();
-      const newPass = document.getElementById('newPasswordInput').value.trim();
-      const confirmPass = document.getElementById('confirmNewPasswordInput').value.trim();
-      const errEl = document.getElementById('changePassErrorMsg');
-      const errText = document.getElementById('changePassErrorText');
-      const submitBtn = document.getElementById('saveChangePassBtn');
-      const submitBtnText = document.getElementById('saveChangePassBtnText');
-
-      if (oldPass !== currentPassword) {
-        if (errText) errText.textContent = "Password lama yang Anda masukkan salah!";
-        if (errEl) errEl.classList.remove('hidden');
-        return false;
-      }
-
-      if (newPass !== confirmPass) {
-        if (errText) errText.textContent = "Konfirmasi password baru tidak cocok!";
-        if (errEl) errEl.classList.remove('hidden');
-        return false;
-      }
-
-      if (newPass.length < 5) {
-        if (errText) errText.textContent = "Password baru minimal 5 karakter!";
-        if (errEl) errEl.classList.remove('hidden');
-        return false;
-      }
-
-      if (errEl) errEl.classList.add('hidden');
-
-      if (submitBtn) submitBtn.disabled = true;
-      if (submitBtnText) submitBtnText.textContent = "Menyimpan...";
-
-      try {
-        if (USER_SHEETS_URL) {
-          await fetch(USER_SHEETS_URL, {
-            method: 'POST',
-            mode: 'cors',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({
-              action: 'changePassword',
-              user: currentAccountUser,
-              oldPassword: oldPass,
-              newPassword: newPass
-            })
-          });
-        }
-
-        currentPassword = newPass;
-
-        closeChangePasswordModal();
-        showToast("Password Anda berhasil diperbarui di spreadsheet!");
-      } catch (err) {
-        currentPassword = newPass;
-        closeChangePasswordModal();
-        showToast("Password berhasil diperbarui!");
-      } finally {
-        if (submitBtn) submitBtn.disabled = false;
-        if (submitBtnText) submitBtnText.textContent = "Simpan Password";
-      }
-      return false;
-    }
-
-    async function handleFrontLogin(e) {
-      if (e && e.preventDefault) e.preventDefault();
-      
-      const userInput = document.getElementById('frontLoginUsername');
-      const pwdInput = document.getElementById('frontLoginPassword');
-      const errorMsg = document.getElementById('frontLoginErrorMsg');
-      const errorText = document.getElementById('frontLoginErrorText');
-      const loginBtn = document.getElementById('frontLoginBtn');
-      const loginBtnText = document.getElementById('frontLoginBtnText');
-
-      if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS) {
-        const maxModal = document.getElementById('maxLoginAttemptsModal');
-        if (maxModal) maxModal.classList.remove('hidden');
-        return false;
-      }
-
-      const username = userInput ? userInput.value.trim().toLowerCase() : '';
-      const pwd = pwdInput ? pwdInput.value.trim() : '';
-
-      if (!username || !pwd) {
-        if (errorText) errorText.textContent = "Username dan Password wajib diisi!";
-        if (errorMsg) errorMsg.classList.remove('hidden');
-        return false;
-      }
-
-      if (loginBtn) loginBtn.disabled = true;
-      if (loginBtnText) loginBtnText.textContent = "Verifikasi Akses...";
-
-      let authenticatedUser = null;
-      let connectionError = false;
-
-      try {
-        if (USER_SHEETS_URL) {
-          const res = await fetch(USER_SHEETS_URL, {
-            method: 'POST',
-            mode: 'cors',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({
-              action: 'login',
-              user: username,
-              password: pwd
-            })
-          });
-
-          if (res.ok) {
-            const data = await res.json();
-            if (data && data.success && data.userData) {
-              authenticatedUser = {
-                user: data.userData.user || username,
-                password: pwd,
-                nama: data.userData.nama || username,
-                role: data.userData.role || 'Petugas',
-                allowedTabs: parseAccessibilityStringToTabs(data.userData.aksesibilitas)
-              };
-            }
-          } else {
-            connectionError = true;
-          }
-        } else {
-          connectionError = true;
-        }
-      } catch (err) {
-        console.error("Gagal terhubung ke server otentikasi Google Sheets:", err);
-        connectionError = true;
-      }
-
-      if (connectionError && !authenticatedUser) {
-        if (errorText) errorText.textContent = "Gagal terhubung ke server otentikasi. Periksa koneksi internet Anda!";
-        if (errorMsg) errorMsg.classList.remove('hidden');
-        if (loginBtn) loginBtn.disabled = false;
-        if (loginBtnText) loginBtnText.textContent = "Masuk Aplikasi";
-        return false;
-      }
-
-      if (!authenticatedUser) {
-        failedLoginAttempts++;
-
-        if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS) {
-          if (errorMsg) errorMsg.classList.add('hidden');
-          const maxModal = document.getElementById('maxLoginAttemptsModal');
-          if (maxModal) maxModal.classList.remove('hidden');
-        } else {
-          if (errorText) errorText.textContent = "Username atau Password salah!";
-          if (errorMsg) errorMsg.classList.remove('hidden');
-        }
-
-        if (loginBtn) loginBtn.disabled = false;
-        if (loginBtnText) loginBtnText.textContent = "Masuk Aplikasi";
-        return false;
-      }
-
-      failedLoginAttempts = 0;
-
-      currentAccountUser = authenticatedUser.user;
-      currentPassword = authenticatedUser.password;
-      currentUserRole = `${authenticatedUser.role} (${authenticatedUser.nama})`;
-      currentPetugas = authenticatedUser.nama;
-      allowedTabs = authenticatedUser.allowedTabs;
-
-      if (errorMsg) errorMsg.classList.add('hidden');
-      if (userInput) userInput.value = '';
-      if (pwdInput) pwdInput.value = '';
-      if (loginBtn) loginBtn.disabled = false;
-      if (loginBtnText) loginBtnText.textContent = "Masuk Aplikasi";
-
-      const loginModal = document.getElementById('frontLoginModal');
-      if (loginModal) loginModal.classList.add('hidden');
-
-      const mainHeader = document.getElementById('mainAppHeader');
-      const mainWrapper = document.getElementById('mainAppWrapper');
-      if (mainHeader) mainHeader.classList.remove('hidden');
-      if (mainWrapper) mainWrapper.classList.remove('hidden');
-
-      const currentPetugasBadge = document.getElementById('currentPetugasBadge');
-      if (currentPetugasBadge) currentPetugasBadge.textContent = currentPetugas;
-
-      updateSidebarAccessState();
-      trySwitchTab(allowedTabs[0] || 'summary');
-      return false;
+      document.getElementById('maxLoginAttemptsModal').classList.add('hidden');
     }
 
     function logoutSession() {
       currentAccountUser = "";
       currentUserRole = "";
-      currentPetugas = "";
+      currentPetugas = "Petugas KU";
       currentPassword = "";
-      allowedTabs = [];
-
-      const loginModal = document.getElementById('frontLoginModal');
-      const mainHeader = document.getElementById('mainAppHeader');
-      const mainWrapper = document.getElementById('mainAppWrapper');
-      const userInput = document.getElementById('frontLoginUsername');
-      const pwdInput = document.getElementById('frontLoginPassword');
-      const errorMsg = document.getElementById('frontLoginErrorMsg');
-
-      if (userInput) userInput.value = '';
-      if (pwdInput) pwdInput.value = '';
-      if (errorMsg) errorMsg.classList.add('hidden');
-      if (mainHeader) mainHeader.classList.add('hidden');
-      if (mainWrapper) mainWrapper.classList.add('hidden');
-      if (loginModal) loginModal.classList.remove('hidden');
-
-      updateSidebarAccessState();
-    }
-
-    function updateSidebarAccessState() {
-      const summaryLock = document.getElementById('navSummaryLockIcon');
-      const bkLock = document.getElementById('navBukuKasLockIcon');
-      const inputLock = document.getElementById('navInputLockIcon');
-      const rekapLock = document.getElementById('navRekapLockIcon');
-      const infoLock = document.getElementById('navInfoLockIcon');
-
-      if (summaryLock) summaryLock.className = allowedTabs.includes('summary') ? "fa-solid fa-check text-xs text-emerald-500 ml-1" : "fa-solid fa-lock text-xs text-slate-400 ml-1";
-      if (bkLock) bkLock.className = allowedTabs.includes('bukukas') ? "fa-solid fa-check text-xs text-emerald-500 ml-1" : "fa-solid fa-lock text-xs text-slate-400 ml-1";
-      if (inputLock) inputLock.className = allowedTabs.includes('input') ? "fa-solid fa-check text-xs text-emerald-500 ml-1" : "fa-solid fa-lock text-xs text-slate-400 ml-1";
-      if (rekapLock) rekapLock.className = allowedTabs.includes('rekap') ? "fa-solid fa-check text-xs text-emerald-500 ml-1" : "fa-solid fa-lock text-xs text-slate-400 ml-1";
-      if (infoLock) infoLock.className = allowedTabs.includes('info') ? "fa-solid fa-check text-xs text-emerald-500 ml-1" : "fa-solid fa-lock text-xs text-slate-400 ml-1";
-
-      updateGreetingTexts();
-    }
-
-    function updateGreetingTexts() {
-      const roleText = currentUserRole || "Tamu";
+      allowedTabs = ['summary', 'bukukas', 'input', 'rekap', 'info'];
       
-      const summaryRoleName = document.getElementById('summaryRoleName');
-      if (summaryRoleName) summaryRoleName.textContent = roleText;
+      document.getElementById('frontLoginUsername').value = "";
+      document.getElementById('frontLoginPassword').value = "";
+      document.getElementById('frontLoginErrorMsg').classList.add('hidden');
 
-      const bukuKasRoleName = document.getElementById('bukuKasRoleName');
-      if (bukuKasRoleName) bukuKasRoleName.textContent = roleText;
-
-      const inputRoleName = document.getElementById('inputRoleName');
-      if (inputRoleName) inputRoleName.textContent = roleText;
-
-      const rekapRoleName = document.getElementById('rekapRoleName');
-      if (rekapRoleName) rekapRoleName.textContent = roleText;
-
-      const infoRoleName = document.getElementById('infoRoleName');
-      if (infoRoleName) infoRoleName.textContent = roleText;
+      document.getElementById('mainAppHeader').classList.add('hidden');
+      document.getElementById('mainAppWrapper').classList.add('hidden');
+      document.getElementById('frontLoginModal').classList.remove('hidden');
+      showToast("Anda telah keluar dari aplikasi.");
     }
 
+    // Navigation & Tab Switching Logic
     function trySwitchTab(tabName) {
       if (!allowedTabs.includes(tabName)) {
-        showToast(`Akses Ditolak: Peran Anda (${currentUserRole || 'Pengguna'}) tidak memiliki wewenang untuk membuka menu ini.`);
+        showToast(`Akses tab ini dibatasi untuk role ${currentUserRole}!`);
         return;
       }
 
       activeTab = tabName;
 
-      const summarySec = document.getElementById('summaryTabSection');
-      const bkSec = document.getElementById('bukuKasTabSection');
-      const inputSec = document.getElementById('inputTabSection');
-      const rekapSec = document.getElementById('rekapTabSection');
-      const infoSec = document.getElementById('infoTabSection');
+      const sections = {
+        summary: 'summaryTabSection',
+        bukukas: 'bukuKasTabSection',
+        input: 'inputTabSection',
+        rekap: 'rekapTabSection',
+        info: 'infoTabSection'
+      };
 
-      if (summarySec) summarySec.classList.add('hidden');
-      if (bkSec) bkSec.classList.add('hidden');
-      if (inputSec) inputSec.classList.add('hidden');
-      if (rekapSec) rekapSec.classList.add('hidden');
-      if (infoSec) infoSec.classList.add('hidden');
+      const navBtns = {
+        summary: 'navSummaryBtn',
+        bukukas: 'navBukuKasBtn',
+        input: 'navInputBtn',
+        rekap: 'navRekapBtn',
+        info: 'navInfoBtn'
+      };
 
-      if (tabName === 'summary' && summarySec) summarySec.classList.remove('hidden');
-      if (tabName === 'bukukas' && bkSec) bkSec.classList.remove('hidden');
-      if (tabName === 'input' && inputSec) inputSec.classList.remove('hidden');
-      if (tabName === 'rekap' && rekapSec) rekapSec.classList.remove('hidden');
-      if (tabName === 'info' && infoSec) infoSec.classList.remove('hidden');
-
-      updateNavButtonStyles(tabName);
-
-      if (window.innerWidth < 1024) {
-        const sidebar = document.getElementById('mainSidebar');
-        const backdrop = document.getElementById('sidebarBackdrop');
-        if (sidebar) sidebar.classList.add('-translate-x-full');
-        if (backdrop) backdrop.classList.add('hidden');
-      }
-
-      if (!isLoading) {
-        renderDashboard();
-        if (tabName === 'input') renderRecentTransactions();
-      }
-    }
-
-    function updateNavButtonStyles(activeTabName) {
-      const buttons = [
-        { id: 'navSummaryBtn', tab: 'summary' },
-        { id: 'navBukuKasBtn', tab: 'bukukas' },
-        { id: 'navInputBtn', tab: 'input' },
-        { id: 'navRekapBtn', tab: 'rekap' },
-        { id: 'navInfoBtn', tab: 'info' }
-      ];
-
-      buttons.forEach(b => {
-        const btn = document.getElementById(b.id);
-        if (!btn) return;
-        const isAllowed = allowedTabs.includes(b.tab);
-        if (b.tab === activeTabName) {
-          btn.className = "w-full flex items-center justify-between px-4 py-3 rounded-2xl font-extrabold text-sm transition-all bg-emerald-600 text-white shadow-md shadow-emerald-600/20";
-        } else if (isAllowed) {
-          btn.className = "w-full flex items-center justify-between px-4 py-3 rounded-2xl font-semibold text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800";
-        } else {
-          btn.className = "w-full flex items-center justify-between px-4 py-3 rounded-2xl font-normal text-sm transition-all text-slate-400 dark:text-slate-600 opacity-60 cursor-not-allowed";
+      Object.keys(sections).forEach(key => {
+        const sec = document.getElementById(sections[key]);
+        const btn = document.getElementById(navBtns[key]);
+        if (sec) {
+          if (key === tabName) sec.classList.remove('hidden');
+          else sec.classList.add('hidden');
+        }
+        if (btn) {
+          if (key === tabName) {
+            btn.className = "w-full flex items-center justify-between px-4 py-3 rounded-2xl font-bold text-sm transition-all bg-emerald-600 text-white shadow-lg shadow-emerald-600/20";
+          } else {
+            btn.className = "w-full flex items-center justify-between px-4 py-3 rounded-2xl font-semibold text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800";
+          }
         }
       });
+
+      updateSidebarLockIcons();
+
+      // Close sidebar on mobile
+      const sidebar = document.getElementById('mainSidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      if (sidebar && backdrop && window.innerWidth < 1024) {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      }
+
+      renderDashboard();
     }
 
     function toggleSidebar() {
       const sidebar = document.getElementById('mainSidebar');
       const backdrop = document.getElementById('sidebarBackdrop');
-      
-      if (sidebar) sidebar.classList.toggle('-translate-x-full');
-      if (backdrop) backdrop.classList.toggle('hidden');
+      if (!sidebar || !backdrop) return;
+
+      if (sidebar.classList.contains('-translate-x-full')) {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+      } else {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      }
+    }
+
+    // Modal Change Password Functions
+    function openChangePasswordModal() {
+      document.getElementById('oldPasswordInput').value = '';
+      document.getElementById('newPasswordInput').value = '';
+      document.getElementById('confirmNewPasswordInput').value = '';
+      document.getElementById('changePassErrorMsg').classList.add('hidden');
+      document.getElementById('changePasswordModal').classList.remove('hidden');
+    }
+
+    function closeChangePasswordModal() {
+      document.getElementById('changePasswordModal').classList.add('hidden');
+    }
+
+    async function handleChangePasswordSubmit(e) {
+      if (e && e.preventDefault) e.preventDefault();
+
+      const oldPass = document.getElementById('oldPasswordInput').value;
+      const newPass = document.getElementById('newPasswordInput').value;
+      const confirmPass = document.getElementById('confirmNewPasswordInput').value;
+      const errorMsg = document.getElementById('changePassErrorMsg');
+      const errorText = document.getElementById('changePassErrorText');
+      const saveBtn = document.getElementById('saveChangePassBtn');
+      const saveBtnText = document.getElementById('saveChangePassBtnText');
+
+      if (oldPass !== currentPassword) {
+        if (errorMsg && errorText) {
+          errorText.textContent = "Password lama yang Anda masukkan salah!";
+          errorMsg.classList.remove('hidden');
+        }
+        return false;
+      }
+
+      if (newPass !== confirmPass) {
+        if (errorMsg && errorText) {
+          errorText.textContent = "Konfirmasi password baru tidak cocok!";
+          errorMsg.classList.remove('hidden');
+        }
+        return false;
+      }
+
+      if (saveBtn) saveBtn.disabled = true;
+      if (saveBtnText) saveBtnText.textContent = "Updating Password...";
+
+      try {
+        let updatedInSpreadsheet = false;
+
+        if (USER_SHEETS_URL) {
+          try {
+            const updateUrl = `${USER_SHEETS_URL}?action=changePassword&username=${encodeURIComponent(currentAccountUser)}&oldPassword=${encodeURIComponent(oldPass)}&newPassword=${encodeURIComponent(newPass)}`;
+            
+            const res = await fetch(updateUrl, { redirect: 'follow' });
+            if (res.ok) {
+              const resText = await res.text();
+              if (resText.trim().startsWith('{')) {
+                const resJson = JSON.parse(resText);
+                if (resJson.status === 'success') {
+                  updatedInSpreadsheet = true;
+                }
+              }
+            }
+          } catch (fetchErr) {
+            console.warn("Gagal memperbarui password di Google Sheets backend:", fetchErr);
+          }
+        }
+
+        currentPassword = newPass;
+        closeChangePasswordModal();
+        
+        if (updatedInSpreadsheet) {
+          showToast("Password Anda berhasil diperbarui!");
+        } else {
+          showToast("Password diperbarui untuk sesi aplikasi saat ini!");
+        }
+      } catch (err) {
+        console.error("Error change password:", err);
+        showToast("Gagal memperbarui password!");
+      } finally {
+        if (saveBtn) saveBtn.disabled = false;
+        if (saveBtnText) saveBtnText.textContent = "Simpan Password";
+      }
+
+      return false;
     }
 
     function copyRekeningNumber() {
-      const rekNum = "505394744846";
-      const tempInput = document.createElement('input');
-      tempInput.value = rekNum;
-      document.body.appendChild(tempInput);
-      tempInput.select();
-      document.execCommand('copy');
-      document.body.removeChild(tempInput);
-      showToast("Nomor rekening (505394744846) berhasil disalin ke clipboard!");
+      const number = "505394744846";
+      const dummy = document.createElement("textarea");
+      document.body.appendChild(dummy);
+      dummy.value = number;
+      dummy.select();
+      document.execCommand("copy");
+      document.body.removeChild(dummy);
+      showToast("Nomor rekening berhasil disalin ke clipboard!");
+    }
+
+    // Text Content for the Scannable QR Code
+    const QR_TEXT_CONTENT = `Untuk infaq dan shodaqoh Kelompok SKB1, silakan transfer melalui aplikasi bank/e-wallet yang Anda gunakan ke rekening KU Kelompok berikut:
+
+- Bank: Bank Jago Syariah
+- Nama penerima: ARIF FIRMANSYAH S T
+- Nomor rekening: 505394744846
+
+Catatan:
+1. Periksa kembali nama penerima sesuai dengan informasi di atas sebelum melakukan transfer
+2. Informasikan kepada KU Kelompok jika proses transfer selesai dilakukan`;
+
+    // Global QR Code Generator Instance
+    let qrCodeInstance = null;
+
+    // Standard Valid QR Code Generator using SVG/Canvas Fallback
+    function generateScannableQRCode(text) {
+      const container = document.getElementById('qrCodeContainer');
+      if (!container) return;
+
+      container.innerHTML = '';
+
+      try {
+        if (typeof QRCode !== 'undefined') {
+          qrCodeInstance = new QRCode(container, {
+            text: text,
+            width: 256,
+            height: 256,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M
+          });
+        }
+      } catch (err) {
+        console.error("Gagal membuat QR Code standar:", err);
+      }
+    }
+
+    // Download QR Code Image Function
+    function downloadQRCodeImage() {
+      const container = document.getElementById('qrCodeContainer');
+      if (!container) return;
+
+      const img = container.querySelector('img');
+      const canvas = container.querySelector('canvas');
+
+      let imgURI = '';
+      if (img && img.src && img.src.length > 0) {
+        imgURI = img.src;
+      } else if (canvas) {
+        try {
+          imgURI = canvas.toDataURL('image/png');
+        } catch (e) {
+          console.error("Gagal mengonversi canvas ke Data URL:", e);
+        }
+      }
+
+      if (!imgURI) {
+        showToast("QR Code belum siap untuk diunduh. Silakan coba beberapa saat lagi.");
+        return;
+      }
+
+      const tempCanvas = document.createElement('canvas');
+      const ctx = tempCanvas.getContext('2d');
+      const qrImg = new Image();
+
+      qrImg.onload = function() {
+        const padding = 40;
+        tempCanvas.width = qrImg.width + (padding * 2);
+        tempCanvas.height = qrImg.height + (padding * 2);
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+        ctx.drawImage(qrImg, padding, padding);
+
+        const finalURI = tempCanvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = `QR_Rekening_Infaq_SKB1_${new Date().toISOString().split('T')[0]}.png`;
+        link.href = finalURI;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showToast("Gambar QR Rekening berhasil diunduh!");
+      };
+
+      qrImg.onerror = function() {
+        const link = document.createElement('a');
+        link.download = `QR_Rekening_Infaq_SKB1_${new Date().toISOString().split('T')[0]}.png`;
+        link.href = imgURI;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast("Gambar QR Rekening berhasil diunduh!");
+      };
+
+      qrImg.src = imgURI;
     }
 
     // Dynamic Spreadsheet Loading & Adaptive Mapping
@@ -1888,10 +1939,14 @@
       isLoading = true;
       const refreshIcon = document.getElementById('refreshIcon');
       if (refreshIcon) refreshIcon.classList.add('fa-spin');
+      showToast("Menghubungkan & menyinkronkan data Google Sheets...");
 
       try {
         if (TRANSACTION_SHEETS_URL) {
-          const res = await fetch(`${TRANSACTION_SHEETS_URL}?t=${Date.now()}`);
+          const res = await fetch(`${TRANSACTION_SHEETS_URL}?action=getData&t=${Date.now()}`, {
+            redirect: 'follow'
+          });
+
           if (res.ok) {
             const text = await res.text();
             if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
@@ -1899,14 +1954,23 @@
               
               let txArray = [];
               let sheetsJamaahArray = [];
+              let sheetsInfoArray = [];
 
+              // Flexible extraction based on Apps Script JSON response format
               if (Array.isArray(data)) {
                 txArray = data;
               } else if (typeof data === 'object' && data !== null) {
                 if (Array.isArray(data.transactions)) txArray = data.transactions;
+                else if (Array.isArray(data.data)) txArray = data.data;
+                else if (Array.isArray(data.result)) txArray = data.result;
+                else if (Array.isArray(data.rows)) txArray = data.rows;
+
                 if (Array.isArray(data.jamaah)) sheetsJamaahArray = data.jamaah;
+                if (Array.isArray(data.informasi)) sheetsInfoArray = data.informasi;
+                else if (Array.isArray(data.info)) sheetsInfoArray = data.info;
               }
 
+              // Process Jamaah List
               if (sheetsJamaahArray.length > 0) {
                 jamaahList = Array.from(new Set(
                   sheetsJamaahArray
@@ -1917,50 +1981,62 @@
                 jamaahList = [...defaultJamaahList].sort();
               }
 
+              // Process Transactions with robust property mapping
               if (txArray.length > 0) {
                 transactions = txArray.map((t, idx) => {
-                  const rawDate = t.date || t.Date || t.tanggal || t.Tanggal || t.TGL || '';
-                  const rawType = t.type || t.Type || t.tipe || t.Tipe || 'debet';
-                  const rawCategory = t.category || t.Category || t.klasifikasi || t.Klasifikasi || 'Lain-lain';
-                  const rawDesc = t.description || t.Description || t.uraian || t.Uraian || t.Detail || '';
+                  const rawDate = t.date || t.Date || t.tanggal || t.Tanggal || t.TGL || t.tgl || '';
+                  const rawType = t.type || t.Type || t.tipe || t.Tipe || t.jenis || 'debet';
+                  const rawCategory = t.category || t.Category || t.klasifikasi || t.Klasifikasi || t.kategori || 'Lain-lain';
+                  const rawDesc = t.description || t.Description || t.uraian || t.Uraian || t.Detail || t.detail || '';
                   const rawNotes = t.notes || t.Notes || t.keterangan || t.Keterangan || '';
-                  const rawAmount = t.amount || t.Amount || t.nominal || t.Nominal || t.Jumlah || 0;
+                  const rawAmount = t.amount || t.Amount || t.nominal || t.Nominal || t.Jumlah || t.jumlah || 0;
 
                   return {
-                    id: String(t.id || 'tx-' + idx + '-' + Date.now()),
+                    id: String(t.id || t.ID || 'tx-' + idx + '-' + Date.now()),
                     date: normalizeDateToDDMMYYYY(rawDate),
                     type: String(rawType).toLowerCase().trim(),
                     category: String(rawCategory).trim(),
                     description: String(rawDesc).trim(),
                     notes: String(rawNotes).trim(),
                     amount: parseNumericAmount(rawAmount),
-                    timestamp_input: String(t.timestamp_input || t.Timestamp || ''),
-                    petugas_input: String(t.petugas_input || t.Petugas || ''),
-                    bukti_url: String(t.bukti_url || t.Bukti || '')
+                    timestamp_input: String(t.timestamp_input || t.Timestamp || t.timestamp || ''),
+                    petugas_input: String(t.petugas_input || t.Petugas || t.petugas || ''),
+                    bukti_url: String(t.bukti_url || t.Bukti || t.bukti || '')
                   };
                 });
 
                 renderJamaahDropdownOptions();
+                showToast(`Berhasil menyinkronkan ${transactions.length} data transaksi!`);
+              } else {
+                showToast("Berhasil terhubung, namun belum ada transaksi tercatat di Spreadsheet.");
               }
 
-              if (Array.isArray(data.informasi) && data.informasi.length > 0) {
-                informasiList = data.informasi.map((inf, i) => ({
-                  id: String(inf.id || 'info-' + (i + 1)),
-                  no: inf.no || (i + 1),
-                  informasi: String(inf.informasi || inf.Info || inf.Informasi || ''),
-                  tanggal: normalizeDateToDDMMYYYY(inf.tanggal || inf.Tanggal || '')
+              // Process Information / Announcement List
+              if (sheetsInfoArray.length > 0) {
+                informasiList = sheetsInfoArray.map((inf, i) => ({
+                  id: String(inf.id || inf.ID || 'info-' + (i + 1)),
+                  no: inf.no || inf.No || (i + 1),
+                  informasi: String(inf.informasi || inf.Info || inf.Informasi || inf.isi || inf.agenda || ''),
+                  tanggal: normalizeDateToDDMMYYYY(inf.tanggal || inf.Tanggal || inf.date || inf.Date || '')
                 }));
               }
+            } else {
+              showToast("Format respons Google Sheets tidak valid.");
             }
+          } else {
+            showToast("Gagal mengambil data dari Google Sheets. Periksa URL script.");
           }
         }
       } catch (err) {
         console.warn("Koneksi Google Sheets Transaksi gagal, memuat data lokal...", err);
+        showToast("Terjadi kesalahan koneksi saat me-refresh data.");
       } finally {
         isLoading = false;
         if (refreshIcon) refreshIcon.classList.remove('fa-spin');
-        setMonthFilter('latest', 'summary');
-        setMonthFilter('latest', 'bk');
+        
+        // Auto-select "Semua Periode" jika data bertanggal di luar bulan berjalan
+        setMonthFilter('all', 'summary');
+        setMonthFilter('all', 'bk');
         renderDashboard();
         renderRecentTransactions();
         renderInformasiList();
@@ -1976,7 +2052,7 @@
 
       if (informasiList.length === 0) {
         container.innerHTML = `
-          <div class="p-5 text-center text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-200/80 dark:border-slate-800 text-xs font-medium">
+          <div class="p-5 text-center text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-medium">
             <i class="fa-solid fa-circle-info text-2xl mb-1 block text-slate-300 dark:text-slate-600"></i>
             Belum ada informasi/kegiatan tambahan yang dimasukkan.
           </div>
@@ -1986,7 +2062,7 @@
 
       informasiList.forEach((item, idx) => {
         const card = document.createElement('div');
-        card.className = "bg-slate-50/80 dark:bg-[#0b1329] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-all hover:border-emerald-500/40";
+        card.className = "bg-slate-50 dark:bg-[#0b1329] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-all hover:border-emerald-500/40";
         
         const safeId = String(item.id).replace(/'/g, "\\'");
         const displayDate = normalizeDateToDDMMYYYY(item.tanggal) || item.tanggal;
@@ -2006,7 +2082,7 @@
             </p>
           </div>
 
-          <div class="flex items-center space-x-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200/60 dark:border-slate-800">
+          <div class="flex items-center space-x-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200 dark:border-slate-800">
             <button type="button" onclick="openEditInfoModal('${safeId}')" class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 rounded-xl font-bold text-xs transition-all flex items-center gap-1">
               <i class="fa-solid fa-pen-to-square"></i> Edit
             </button>
@@ -2529,7 +2605,7 @@
           sumKredit += kreditVal;
 
           const row = document.createElement('tr');
-          row.className = "hover:bg-slate-50/80 dark:hover:bg-slate-700/40 transition-colors";
+          row.className = "hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors";
           
           let catBadgeClass = "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300";
           if (t.category === 'Shodaqoh') catBadgeClass = "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300";
@@ -3295,6 +3371,8 @@
       updateCategoryDropdownLabel('summary');
       updateCategoryDropdownLabel('bk');
       toggleCategoryInputFields();
+
+      generateScannableQRCode(QR_TEXT_CONTENT);
 
       await syncAndLoadLatestData();
       
