@@ -3307,7 +3307,7 @@ Catatan:
       const kpiExpenseRatio = document.getElementById('kpiExpenseRatio');
       const kpiExpenseRatioBadge = document.getElementById('kpiExpenseRatioBadge');
 
-      if (kpiExpenseRatio) kpiExpenseRatio.textContent = expenseRatio.toFixed(1) + '%';
+      if (kpiExpenseRatio) kpiExpenseRatio.textContent = Math.round(expenseRatio) + '%';
       if (kpiExpenseRatioBadge) {
         if (expenseRatio <= 75) {
           kpiExpenseRatioBadge.textContent = "Sangat Efisien (<75%)";
@@ -3321,11 +3321,29 @@ Catatan:
         }
       }
 
-      const avgShodaqoh = summaryCountDebet > 0 ? (summaryDebet / summaryCountDebet) : 0;
+      // Calculation 1: Rata-rata Shodaqoh (Hanya dari klasifikasi = "Shodaqoh")
+      let totalShodaqohAmount = 0;
+      let countShodaqoh = 0;
+      filteredSummary.forEach(t => {
+        if (t.category === 'Shodaqoh') {
+          totalShodaqohAmount += parseNumericAmount(t.amount);
+          countShodaqoh++;
+        }
+      });
+      const avgShodaqoh = countShodaqoh > 0 ? Math.round(totalShodaqohAmount / countShodaqoh) : 0;
       const kpiAvgShodaqoh = document.getElementById('kpiAvgShodaqoh');
       if (kpiAvgShodaqoh) kpiAvgShodaqoh.textContent = formatRupiah(avgShodaqoh);
 
-      const avgExpense = summaryCountKredit > 0 ? (summaryKredit / summaryCountKredit) : 0;
+      // Calculation 2: Rata-rata Pengeluaran (Kredit selain klasifikasi = "Setoran KU")
+      let totalFilteredExpenseNonSetoran = 0;
+      let countExpenseNonSetoran = 0;
+      filteredSummary.forEach(t => {
+        if (t.type === 'kredit' && t.category !== 'Setoran KU') {
+          totalFilteredExpenseNonSetoran += parseNumericAmount(t.amount);
+          countExpenseNonSetoran++;
+        }
+      });
+      const avgExpense = countExpenseNonSetoran > 0 ? Math.round(totalFilteredExpenseNonSetoran / countExpenseNonSetoran) : 0;
       const kpiAvgExpense = document.getElementById('kpiAvgExpense');
       if (kpiAvgExpense) kpiAvgExpense.textContent = formatRupiah(avgExpense);
 
