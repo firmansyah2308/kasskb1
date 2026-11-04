@@ -1404,18 +1404,21 @@
       return 'Rp ' + Math.abs(num).toLocaleString('id-ID');
     }
 
+    // SAFE DATE PARSING (Murni Manipulasi String tanpa distorsi Timezone JS Date)
     function parseISOtoDDMMYYYY(isoStr) {
       if (!isoStr) return '';
-      const parts = isoStr.split('-');
+      const str = String(isoStr).trim().split('T')[0];
+      const parts = str.split('-');
       if (parts.length === 3) {
-        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[0]}`;
       }
       return isoStr;
     }
 
     function parseDDMMYYYYtoISO(dmyStr) {
       if (!dmyStr) return '';
-      const parts = dmyStr.split('/');
+      const str = String(dmyStr).trim().split(' ')[0];
+      const parts = str.split('/');
       if (parts.length === 3) {
         return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
       }
@@ -1424,59 +1427,56 @@
 
     function formatDateToIndonesianDay(rawDate) {
       if (!rawDate) return '';
-      let dateObj = null;
+      const normDate = normalizeDateToDDMMYYYY(rawDate);
+      const parts = normDate.split('/');
+      
+      if (parts.length === 3) {
+        const dayNum = parseInt(parts[0], 10);
+        const monthIdx = parseInt(parts[1], 10) - 1;
+        const year = parseInt(parts[2], 10);
+        
+        // Buat objek Date lokal persis pada jam 12 siang agar aman dari offset timezone
+        const dateObj = new Date(year, monthIdx, dayNum, 12, 0, 0);
 
-      if (rawDate instanceof Date) {
-        dateObj = rawDate;
-      } else {
-        const str = String(rawDate).trim();
-        if (str.includes('/')) {
-          const parts = str.split('/');
-          if (parts.length === 3) {
-            dateObj = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
-          }
-        } else if (str.includes('-')) {
-          const parts = str.split('T')[0].split('-');
-          if (parts.length === 3) {
-            dateObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-          }
+        if (!isNaN(dateObj.getTime())) {
+          const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+          const months = [
+            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+          ];
+          return `${days[dateObj.getDay()]}, ${dayNum} ${months[monthIdx]} ${year}`;
         }
       }
 
-      if (!dateObj || isNaN(dateObj.getTime())) {
-        return rawDate;
-      }
-
-      const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-      const months = [
-        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-      ];
-
-      const dayName = days[dateObj.getDay()];
-      const dayNum = dateObj.getDate();
-      const monthName = months[dateObj.getMonth()];
-      const year = dateObj.getFullYear();
-
-      return `${dayName}, ${dayNum} ${monthName} ${year}`;
+      return rawDate;
     }
 
     function normalizeDateToDDMMYYYY(rawDate) {
       if (!rawDate) return '';
+      
+      // Jika rawDate berupa objek Date
       if (rawDate instanceof Date) {
         const dd = String(rawDate.getDate()).padStart(2, '0');
         const mm = String(rawDate.getMonth() + 1).padStart(2, '0');
         const yyyy = rawDate.getFullYear();
         return `${dd}/${mm}/${yyyy}`;
       }
+
       const str = String(rawDate).trim();
-      if (str.includes('T')) {
-        const isoPart = str.split('T')[0];
-        return parseISOtoDDMMYYYY(isoPart);
+      
+      // Jika sudah berformat DD/MM/YYYY
+      if (str.includes('/')) {
+        const p = str.split('/');
+        if (p.length === 3) {
+          return `${p[0].padStart(2, '0')}/${p[1].padStart(2, '0')}/${p[2]}`;
+        }
       }
+
+      // Jika berformat YYYY-MM-DD atau ISO String
       if (str.includes('-')) {
         return parseISOtoDDMMYYYY(str);
       }
+
       return str;
     }
 
@@ -1492,6 +1492,7 @@
       }
     }
 
+    // Toggle Password Input Visibility
     function togglePasswordVisibility(inputId, eyeIconId) {
       const input = document.getElementById(inputId);
       const icon = document.getElementById(eyeIconId);
@@ -1505,6 +1506,7 @@
       }
     }
 
+    // Convert Access String into Allowed Tabs Array
     function parseAksesString(aksesStr, roleStr) {
       const inputStr = String(aksesStr || '').trim().toLowerCase();
       const role = String(roleStr || '').trim().toLowerCase();
@@ -1523,6 +1525,7 @@
       return tabs.length > 0 ? tabs : ['summary', 'bukukas', 'input', 'rekap', 'info'];
     }
 
+    // Update Lock Icons on Sidebar according to user accessibility
     function updateSidebarLockIcons() {
       const tabLockIds = {
         summary: 'navSummaryLockIcon',
@@ -1548,16 +1551,16 @@
 
         if (lockIcon) {
           if (isAllowed) {
-            lockIcon.className = "fa-solid fa-check text-xs text-slate-900 dark:text-teal-300 ml-1";
+            lockIcon.className = "fa-solid fa-check text-xs text-slate-900 ml-1";
           } else {
-            lockIcon.className = "fa-solid fa-lock text-xs text-rose-400 ml-1";
+            lockIcon.className = "fa-solid fa-lock text-xs text-rose-400 dark:text-rose-500 ml-1";
           }
         }
 
         if (btn) {
           if (!isAllowed) {
             btn.classList.add('opacity-50', 'cursor-not-allowed');
-            btn.setAttribute('title', 'Akses dibatasi');
+            btn.setAttribute('title', 'Akses dibatasi untuk akun Anda');
           } else {
             btn.classList.remove('opacity-50', 'cursor-not-allowed');
             btn.removeAttribute('title');
@@ -1566,6 +1569,7 @@
       });
     }
 
+    // Handle Front Login
     async function handleFrontLogin(e) {
       if (e && e.preventDefault) e.preventDefault();
 
@@ -1592,7 +1596,7 @@
       }
 
       loginBtn.disabled = true;
-      if (btnText) btnText.textContent = "Verifikasi...";
+      if (btnText) btnText.textContent = "Verifikasi Akun...";
 
       try {
         let authenticated = false;
@@ -1633,7 +1637,7 @@
               }
             }
           } catch (fetchErr) {
-            console.warn("Authentication failed, falling back...", fetchErr);
+            console.warn("Spreadsheet authentication request failed or timed out:", fetchErr);
           }
         }
 
@@ -1664,7 +1668,7 @@
           updateSidebarLockIcons();
 
           const initialTab = allowedTabs.includes('summary') ? 'summary' : allowedTabs[0];
-          showToast(`Selamat datang, ${currentPetugas}! ✨`);
+          showToast(`Selamat datang, ${currentPetugas}!`);
           trySwitchTab(initialTab);
         } else {
           failedLoginAttempts++;
@@ -1672,7 +1676,7 @@
             document.getElementById('maxLoginAttemptsModal').classList.remove('hidden');
           } else {
             if (errorMsg && errorText) {
-              errorText.textContent = `Username atau Password salah! (${failedLoginAttempts}/${MAX_LOGIN_ATTEMPTS})`;
+              errorText.textContent = `Username atau Password salah! (Percobaan ${failedLoginAttempts}/${MAX_LOGIN_ATTEMPTS})`;
               errorMsg.classList.remove('hidden');
             }
           }
@@ -1680,7 +1684,7 @@
       } catch (err) {
         console.error("Login process error:", err);
         if (errorMsg && errorText) {
-          errorText.textContent = "Terjadi kesalahan. Silakan coba lagi.";
+          errorText.textContent = "Terjadi kesalahan saat verifikasi login. Silakan coba lagi.";
           errorMsg.classList.remove('hidden');
         }
       } finally {
@@ -1709,12 +1713,13 @@
       document.getElementById('mainAppHeader').classList.add('hidden');
       document.getElementById('mainAppWrapper').classList.add('hidden');
       document.getElementById('frontLoginModal').classList.remove('hidden');
-      showToast("Kamu telah keluar.");
+      showToast("Anda telah keluar dari aplikasi.");
     }
 
+    // Navigation & Tab Switching Logic
     function trySwitchTab(tabName) {
       if (!allowedTabs.includes(tabName)) {
-        showToast(`Akses tab dibatasi!`);
+        showToast(`Akses tab ini dibatasi untuk role ${currentUserRole}!`);
         return;
       }
 
@@ -1778,6 +1783,7 @@
       }
     }
 
+    // Modal Change Password Functions
     function openChangePasswordModal() {
       document.getElementById('oldPasswordInput').value = '';
       document.getElementById('newPasswordInput').value = '';
@@ -1803,7 +1809,7 @@
 
       if (oldPass !== currentPassword) {
         if (errorMsg && errorText) {
-          errorText.textContent = "Password lama salah!";
+          errorText.textContent = "Password lama yang Anda masukkan salah!";
           errorMsg.classList.remove('hidden');
         }
         return false;
@@ -1818,7 +1824,7 @@
       }
 
       if (saveBtn) saveBtn.disabled = true;
-      if (saveBtnText) saveBtnText.textContent = "Updating...";
+      if (saveBtnText) saveBtnText.textContent = "Updating Password...";
 
       try {
         let updatedInSpreadsheet = false;
@@ -1826,23 +1832,32 @@
         if (USER_SHEETS_URL) {
           try {
             const updateUrl = `${USER_SHEETS_URL}?action=changePassword&username=${encodeURIComponent(currentAccountUser)}&oldPassword=${encodeURIComponent(oldPass)}&newPassword=${encodeURIComponent(newPass)}`;
+            
             const res = await fetch(updateUrl, { redirect: 'follow' });
             if (res.ok) {
               const resText = await res.text();
               if (resText.trim().startsWith('{')) {
                 const resJson = JSON.parse(resText);
-                if (resJson.status === 'success') updatedInSpreadsheet = true;
+                if (resJson.status === 'success') {
+                  updatedInSpreadsheet = true;
+                }
               }
             }
           } catch (fetchErr) {
-            console.warn("Gagal update password ke Sheets:", fetchErr);
+            console.warn("Gagal memperbarui password di Google Sheets backend:", fetchErr);
           }
         }
 
         currentPassword = newPass;
         closeChangePasswordModal();
-        showToast("Password kamu berhasil diperbarui!");
+        
+        if (updatedInSpreadsheet) {
+          showToast("Password Anda berhasil diperbarui!");
+        } else {
+          showToast("Password diperbarui untuk sesi aplikasi saat ini!");
+        }
       } catch (err) {
+        console.error("Error change password:", err);
         showToast("Gagal memperbarui password!");
       } finally {
         if (saveBtn) saveBtn.disabled = false;
@@ -1860,39 +1875,40 @@
       dummy.select();
       document.execCommand("copy");
       document.body.removeChild(dummy);
-      showToast("Nomor rekening berhasil disalin!");
+      showToast("Nomor rekening berhasil disalin ke clipboard!");
     }
 
-    const QR_TEXT_CONTENT = `Untuk infaq dan shodaqoh Kelompok SKB1, silakan transfer melalui aplikasi bank/e-wallet ke rekening berikut:
+    const QR_TEXT_CONTENT = `Untuk infaq dan shodaqoh Kelompok SKB1, silakan transfer melalui aplikasi bank/e-wallet yang Anda gunakan ke rekening KU Kelompok berikut:
 
-- Bank: Bank Jago SyARIAH
+- Bank: Bank Jago Syariah
 - Nama penerima: ARIF FIRMANSYAH S T
 - Nomor rekening: 505394744846
 
 Catatan:
-1. Periksa kembali nama penerima
-2. Informasikan ke KU Kelompok jika transfer selesai`;
+1. Periksa kembali nama penerima sesuai dengan informasi di atas sebelum melakukan transfer
+2. Informasikan kepada KU Kelompok jika proses transfer selesai dilakukan`;
 
     let qrCodeInstance = null;
 
     function generateScannableQRCode(text) {
       const container = document.getElementById('qrCodeContainer');
       if (!container) return;
+
       container.innerHTML = '';
 
       try {
         if (typeof QRCode !== 'undefined') {
           qrCodeInstance = new QRCode(container, {
             text: text,
-            width: 200,
-            height: 200,
-            colorDark: "#0F172A",
+            width: 256,
+            height: 256,
+            colorDark: "#000000",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.M
           });
         }
       } catch (err) {
-        console.error("Gagal buat QR Code:", err);
+        console.error("Gagal membuat QR Code standar:", err);
       }
     }
 
@@ -1910,12 +1926,12 @@ Catatan:
         try {
           imgURI = canvas.toDataURL('image/png');
         } catch (e) {
-          console.error("Convert canvas error:", e);
+          console.error("Gagal mengonversi canvas ke Data URL:", e);
         }
       }
 
       if (!imgURI) {
-        showToast("QR Code belum siap untuk diunduh.");
+        showToast("QR Code belum siap untuk diunduh. Silakan coba beberapa saat lagi.");
         return;
       }
 
@@ -1924,22 +1940,33 @@ Catatan:
       const qrImg = new Image();
 
       qrImg.onload = function() {
-        const padding = 30;
+        const padding = 40;
         tempCanvas.width = qrImg.width + (padding * 2);
         tempCanvas.height = qrImg.height + (padding * 2);
 
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
         ctx.drawImage(qrImg, padding, padding);
 
         const finalURI = tempCanvas.toDataURL('image/png');
         const link = document.createElement('a');
-        link.download = `QR_Rekening_SKB1_${new Date().toISOString().split('T')[0]}.png`;
+        link.download = `QR_Rekening_Infaq_SKB1_${new Date().toISOString().split('T')[0]}.png`;
         link.href = finalURI;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
 
+        showToast("Gambar QR Rekening berhasil diunduh!");
+      };
+
+      qrImg.onerror = function() {
+        const link = document.createElement('a');
+        link.download = `QR_Rekening_Infaq_SKB1_${new Date().toISOString().split('T')[0]}.png`;
+        link.href = imgURI;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
         showToast("Gambar QR Rekening berhasil diunduh!");
       };
 
@@ -1950,7 +1977,7 @@ Catatan:
       isLoading = true;
       const refreshIcon = document.getElementById('refreshIcon');
       if (refreshIcon) refreshIcon.classList.add('fa-spin');
-      showToast("Menyinkronkan data Google Sheets...");
+      showToast("Menghubungkan & menyinkronkan data Google Sheets...");
 
       try {
         if (TRANSACTION_SHEETS_URL) {
@@ -2016,7 +2043,7 @@ Catatan:
                 renderJamaahDropdownOptions();
                 showToast("Sinkronisasi transaksi berhasil!");
               } else {
-                showToast("Belum ada data transaksi di Spreadsheet.");
+                showToast("Berhasil terhubung, namun belum ada transaksi.");
               }
 
               if (sheetsInfoArray.length > 0) {
@@ -2027,11 +2054,16 @@ Catatan:
                   tanggal: normalizeDateToDDMMYYYY(inf.tanggal || inf.Tanggal || inf.date || inf.Date || '')
                 }));
               }
+            } else {
+              showToast("Format respons Google Sheets tidak valid.");
             }
+          } else {
+            showToast("Gagal mengambil data dari Google Sheets.");
           }
         }
       } catch (err) {
-        console.warn("Spreadsheet Sync error:", err);
+        console.warn("Koneksi Google Sheets Transaksi gagal:", err);
+        showToast("Terjadi kesalahan koneksi saat me-refresh data.");
       } finally {
         isLoading = false;
         if (refreshIcon) refreshIcon.classList.remove('fa-spin');
@@ -2047,13 +2079,14 @@ Catatan:
     function renderInformasiList() {
       const container = document.getElementById('infoListContainer');
       if (!container) return;
+
       container.innerHTML = '';
 
       if (informasiList.length === 0) {
         container.innerHTML = `
-          <div class="p-5 text-center text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-800 text-xs font-medium">
-            <i class="fa-solid fa-circle-info text-2xl mb-1 block text-slate-300"></i>
-            Belum ada informasi/kegiatan tambahan.
+          <div class="p-5 text-center text-slate-400 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-medium">
+            <i class="fa-solid fa-circle-info text-2xl mb-1 block text-slate-300 dark:text-slate-600"></i>
+            Belum ada informasi/kegiatan tambahan yang dimasukkan.
           </div>
         `;
         return;
@@ -2061,31 +2094,31 @@ Catatan:
 
       informasiList.forEach((item, idx) => {
         const card = document.createElement('div');
-        card.className = "bg-slate-50 dark:bg-[#0F172A] border border-slate-100 dark:border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-all hover:border-teal-400/50";
+        card.className = "bg-slate-50 dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-all hover:border-teal-400/40";
         
         const safeId = String(item.id).replace(/'/g, "\\'");
         const displayDate = formatDateToIndonesianDay(item.tanggal);
 
         card.innerHTML = `
-          <div class="space-y-1 flex-1">
+          <div class="space-y-1.5 flex-1">
             <div class="flex items-center gap-2">
-              <span class="w-5 h-5 rounded-full bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300 font-extrabold text-[10px] flex items-center justify-center shrink-0">
+              <span class="w-5 h-5 rounded-full bg-teal-100 text-teal-800 font-black text-[10px] flex items-center justify-center shrink-0">
                 ${idx + 1}
               </span>
               <span class="px-2.5 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 font-bold border border-teal-200/60 font-mono text-[11px]">
-                <i class="fa-regular fa-calendar mr-1"></i>${displayDate}
+                <i class="fa-regular fa-calendar-check mr-1"></i>${displayDate}
               </span>
             </div>
-            <p class="text-slate-800 dark:text-slate-200 font-bold leading-relaxed pt-1">
+            <p class="text-slate-800 dark:text-slate-200 font-semibold leading-relaxed pt-0.5">
               ${item.informasi}
             </p>
           </div>
 
           <div class="flex items-center space-x-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200 dark:border-slate-800">
-            <button type="button" onclick="openEditInfoModal('${safeId}')" class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 rounded-xl font-bold text-xs transition-all flex items-center gap-1">
+            <button type="button" onclick="openEditInfoModal('${safeId}')" class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl font-bold text-xs transition-all flex items-center gap-1">
               <i class="fa-solid fa-pen-to-square"></i> Edit
             </button>
-            <button type="button" onclick="deleteInformasi('${safeId}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 rounded-xl font-bold text-xs transition-all flex items-center gap-1">
+            <button type="button" onclick="deleteInformasi('${safeId}')" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl font-bold text-xs transition-all flex items-center gap-1">
               <i class="fa-solid fa-trash-can"></i> Hapus
             </button>
           </div>
@@ -2155,13 +2188,13 @@ Catatan:
 
       renderInformasiList();
       closeInfoModal();
-      showToast("Menyimpan informasi...");
+      showToast("Menyimpan informasi ke Spreadsheet...");
 
       try {
         await syncInformasiToSheets();
         showToast("InformasiKU berhasil disimpan!");
       } catch (err) {
-        showToast("Tersimpan lokal.");
+        showToast("Informasi tersimpan lokal.");
       }
       return false;
     }
@@ -2172,10 +2205,11 @@ Catatan:
 
       informasiList = informasiList.filter(i => String(i.id) !== String(id));
       renderInformasiList();
+      showToast("Menghapus informasi...");
 
       try {
         await syncInformasiToSheets();
-        showToast("InformasiKU dihapus!");
+        showToast("InformasiKU berhasil dihapus!");
       } catch (err) {
         showToast("Informasi dihapus.");
       }
@@ -2194,7 +2228,7 @@ Catatan:
           })
         });
       } catch (err) {
-        console.error("Gagal sync Informasi:", err);
+        console.error("Gagal sinkronisasi InformasiKU:", err);
       }
     }
 
@@ -2207,15 +2241,15 @@ Catatan:
       ALL_CATEGORIES.forEach(cat => {
         const checkboxClass = scope === 'bk' ? 'bk-category-checkbox' : 'category-checkbox';
         
-        let labelClass = "font-bold text-slate-700 dark:text-slate-200";
+        let labelClass = "font-medium";
         if (cat.startsWith('KH ')) {
-          labelClass = "font-extrabold text-teal-700 dark:text-teal-400";
+          labelClass = "font-bold text-teal-700 dark:text-teal-300";
         }
 
         const label = document.createElement('label');
-        label.className = "flex items-center space-x-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-800 p-1.5 rounded-xl cursor-pointer";
+        label.className = "flex items-center space-x-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-700/50 p-1.5 rounded-lg cursor-pointer";
         label.innerHTML = `
-          <input type="checkbox" value="${cat}" class="${checkboxClass} rounded-md text-teal-500 focus:ring-teal-400 border-slate-300 dark:border-slate-600" onchange="onCategoryCheckboxChange('${scope}')" checked>
+          <input type="checkbox" value="${cat}" class="${checkboxClass} rounded text-teal-500 focus:ring-teal-400 border-slate-300 dark:border-slate-600" onchange="onCategoryCheckboxChange('${scope}')" checked>
           <span class="${labelClass}">${cat}</span>
         `;
         container.appendChild(label);
@@ -2588,8 +2622,8 @@ Catatan:
         tbody.innerHTML = `
           <tr>
             <td colspan="7" class="py-8 text-center text-slate-400 dark:text-slate-500 font-medium">
-              <i class="fa-solid fa-folder-open text-3xl mb-2 block text-slate-300"></i>
-              Tidak ada data transaksi yang sesuai filter.
+              <i class="fa-solid fa-folder-open text-3xl mb-2 block"></i>
+              Tidak ada data transaksi yang sesuai dengan filter.
             </td>
           </tr>
         `;
@@ -2606,15 +2640,16 @@ Catatan:
           row.className = "hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors";
           
           let catBadgeClass = "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300";
-          if (t.category === 'Shodaqoh') catBadgeClass = "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300";
-          else if (t.category === 'Setoran KU') catBadgeClass = "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300";
-          else if (t.category === 'Konsumsi') catBadgeClass = "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300";
-          else if (t.category === 'Perlengkapan') catBadgeClass = "bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300";
-          else if (t.category === 'Operasional') catBadgeClass = "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300";
+          if (t.category === 'Shodaqoh') catBadgeClass = "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300";
+          else if (t.category === 'Setoran KU') catBadgeClass = "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300";
+          else if (t.category === 'Konsumsi') catBadgeClass = "bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300";
+          else if (t.category === 'Perlengkapan') catBadgeClass = "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300";
+          else if (t.category === 'Operasional') catBadgeClass = "bg-teal-100 text-teal-800 dark:bg-teal-900/50 dark:text-teal-300";
+          else if (t.category === 'Pembangunan') catBadgeClass = "bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300";
 
           let proofHtml = '-';
           if (t.bukti_url && t.bukti_url.startsWith('http')) {
-            proofHtml = `<a href="${t.bukti_url}" target="_blank" rel="noopener" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-950 dark:text-teal-300" title="Buka Kuitansi">
+            proofHtml = `<a href="${t.bukti_url}" target="_blank" rel="noopener" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-600 hover:bg-purple-100 dark:bg-purple-900/40 dark:text-purple-300" title="Buka Bukti">
               <i class="fa-solid fa-paperclip mr-1"></i> Bukti
             </a>`;
           }
@@ -2624,12 +2659,12 @@ Catatan:
           row.innerHTML = `
             <td class="py-3 px-4 font-mono text-xs font-semibold whitespace-nowrap text-slate-600 dark:text-slate-300">${t.date}</td>
             <td class="py-3 px-4 whitespace-nowrap">
-              <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-extrabold ${catBadgeClass}">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${catBadgeClass}">
                 ${t.category}
               </span>
             </td>
             <td class="py-3 px-4">
-              <div class="font-bold text-slate-800 dark:text-slate-100">${t.description}</div>
+              <div class="font-semibold text-slate-800 dark:text-slate-100">${t.description}</div>
               ${t.notes ? `<div class="text-xs text-teal-600 dark:text-teal-400 font-medium mt-0.5"><i class="fa-solid fa-circle-info mr-1 text-[10px]"></i>${t.notes}</div>` : ''}
             </td>
             <td class="py-3 px-4 text-center whitespace-nowrap">
@@ -2658,17 +2693,16 @@ Catatan:
 
     function updateCharts(data) {
       const isDark = document.documentElement.classList.contains('dark');
-      const textColor = isDark ? '#94A3B8' : '#475569';
-      const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
+      const textColor = isDark ? '#94a3b8' : '#475569';
+      const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
 
-      // Pastel Color Palette mapping for charts
       const categoryColors = {
-        'KH FR': '#A855F7', 'KH Shod Daerah': '#EC4899', 'KH Shod Desa': '#06B6D4',
-        'KH Shod Kelompok': '#84CC16', 'KH Infaq': '#14B8A6', 'Shodaqoh': '#10B981',
-        'Tabungan Kurban': '#0D9488', 'Program': '#6366F1', 'Konsumsi': '#F59E0B',
-        'Operasional': '#3B82F6', 'Pembangunan': '#F97316', 'Perlengkapan': '#C084FC',
-        'Setoran KU': '#818CF8', 'Pinjaman/Piutang': '#64748B', 'Ukhro': '#F59E0B',
-        'Lain-lain': '#CBD5E1', 'Lain-lain Desa': '#38BDF8', 'Lain-lain Daerah': '#FB7185'
+        'KH FR': '#8b5cf6', 'KH Shod Daerah': '#ec4899', 'KH Shod Desa': '#06b6d4',
+        'KH Shod Kelompok': '#84cc16', 'KH Infaq': '#14b8a6', 'Shodaqoh': '#10b981',
+        'Tabungan Kurban': '#0d9488', 'Program': '#6366f1', 'Konsumsi': '#f59e0b',
+        'Operasional': '#3b82f6', 'Pembangunan': '#f97316', 'Perlengkapan': '#a855f7',
+        'Setoran KU': '#4f46e5', 'Pinjaman/Piutang': '#64748b', 'Ukhro': '#d97706',
+        'Lain-lain': '#94a3b8', 'Lain-lain Desa': '#0284c7', 'Lain-lain Daerah': '#e11d48'
       };
 
       const incomeTotals = {};
@@ -2685,7 +2719,7 @@ Catatan:
 
       const incLabels = Object.keys(incomeTotals);
       const incData = Object.values(incomeTotals);
-      const incColors = incLabels.map(l => categoryColors[l] || '#CBD5E1');
+      const incColors = incLabels.map(l => categoryColors[l] || '#cbd5e1');
 
       const ctxInc = document.getElementById('categoryIncomeChart');
       if (ctxInc) {
@@ -2697,7 +2731,7 @@ Catatan:
             datasets: [{
               data: incData,
               backgroundColor: incColors,
-              borderWidth: 3,
+              borderWidth: 2,
               borderColor: isDark ? '#1E293B' : '#ffffff'
             }]
           },
@@ -2707,20 +2741,20 @@ Catatan:
             plugins: {
               legend: {
                 position: 'right',
-                labels: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' }, boxWidth: 12, padding: 10 }
+                labels: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 11 }, boxWidth: 12, padding: 10 }
               },
               tooltip: {
                 callbacks: { label: (c) => `${c.label || ''}: ${formatRupiah(c.raw || 0)}` }
               }
             },
-            cutout: '70%'
+            cutout: '65%'
           }
         });
       }
 
       const expLabels = Object.keys(expenseTotals);
       const expData = Object.values(expenseTotals);
-      const expColors = expLabels.map(l => categoryColors[l] || '#CBD5E1');
+      const expColors = expLabels.map(l => categoryColors[l] || '#cbd5e1');
 
       const ctxExp = document.getElementById('categoryExpenseChart');
       if (ctxExp) {
@@ -2732,7 +2766,7 @@ Catatan:
             datasets: [{
               data: expData,
               backgroundColor: expColors,
-              borderWidth: 3,
+              borderWidth: 2,
               borderColor: isDark ? '#1E293B' : '#ffffff'
             }]
           },
@@ -2742,13 +2776,13 @@ Catatan:
             plugins: {
               legend: {
                 position: 'right',
-                labels: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' }, boxWidth: 12, padding: 10 }
+                labels: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 11 }, boxWidth: 12, padding: 10 }
               },
               tooltip: {
                 callbacks: { label: (c) => `${c.label || ''}: ${formatRupiah(c.raw || 0)}` }
               }
             },
-            cutout: '70%'
+            cutout: '65%'
           }
         });
       }
@@ -2779,24 +2813,22 @@ Catatan:
               {
                 label: 'Pemasukan (Debet)',
                 data: debetData,
-                borderColor: '#10B981',
-                backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.15)',
                 fill: true,
-                tension: 0.4,
-                borderWidth: 3,
-                pointRadius: 4,
-                pointBackgroundColor: '#10B981'
+                tension: 0.35,
+                borderWidth: 2,
+                pointRadius: 3
               },
               {
                 label: 'Pengeluaran (Kredit)',
                 data: kreditData,
-                borderColor: '#F43F5E',
-                backgroundColor: 'rgba(244, 63, 94, 0.12)',
+                borderColor: '#f43f5e',
+                backgroundColor: 'rgba(244, 63, 94, 0.15)',
                 fill: true,
-                tension: 0.4,
-                borderWidth: 3,
-                pointRadius: 4,
-                pointBackgroundColor: '#F43F5E'
+                tension: 0.35,
+                borderWidth: 2,
+                pointRadius: 3
               }
             ]
           },
@@ -2804,18 +2836,18 @@ Catatan:
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-              x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10, weight: '600' } } },
+              x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } },
               y: {
                 grid: { color: gridColor },
                 ticks: {
                   color: textColor,
-                  font: { size: 10, weight: '600' },
+                  font: { size: 10 },
                   callback: (value) => 'Rp ' + (value / 1000) + 'k'
                 }
               }
             },
             plugins: {
-              legend: { labels: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' }, boxWidth: 12 } },
+              legend: { labels: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 11 }, boxWidth: 12 } },
               tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${formatRupiah(c.raw)}` } }
             }
           }
@@ -2833,7 +2865,7 @@ Catatan:
         tbody.innerHTML = `
           <tr>
             <td colspan="6" class="py-6 text-center text-slate-400 dark:text-slate-500 font-medium">
-              Belum ada data transaksi.
+              Belum ada data transaksi yang tercatat.
             </td>
           </tr>
         `;
@@ -2845,8 +2877,8 @@ Catatan:
       recentList.forEach((t) => {
         const isDebet = t.type === 'debet';
         let catBadgeClass = "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300";
-        if (t.category === 'Shodaqoh') catBadgeClass = "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300";
-        else if (t.category === 'Setoran KU') catBadgeClass = "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300";
+        if (t.category === 'Shodaqoh') catBadgeClass = "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300";
+        else if (t.category === 'Setoran KU') catBadgeClass = "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300";
 
         const row = document.createElement('tr');
         row.className = "hover:bg-slate-100/60 dark:hover:bg-slate-800/50 transition-colors";
@@ -2858,11 +2890,11 @@ Catatan:
             ${t.date}
           </td>
           <td class="py-2.5 px-3 whitespace-nowrap">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${catBadgeClass}">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${catBadgeClass}">
               ${t.category}
             </span>
           </td>
-          <td class="py-2.5 px-3 font-bold text-slate-800 dark:text-slate-100 max-w-[180px] truncate">
+          <td class="py-2.5 px-3 font-semibold text-slate-800 dark:text-slate-100 max-w-[180px] truncate">
             ${t.description}
           </td>
           <td class="py-2.5 px-3 text-right font-mono font-bold ${isDebet ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'} whitespace-nowrap">
@@ -2873,10 +2905,10 @@ Catatan:
           </td>
           <td class="py-2.5 px-3 text-center whitespace-nowrap">
             <div class="flex items-center justify-center space-x-1.5">
-              <button type="button" onclick="editTransaction('${safeId}')" class="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300 rounded-xl font-bold text-[11px] transition-colors flex items-center gap-1">
+              <button type="button" onclick="editTransaction('${safeId}')" class="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-md font-semibold text-[11px] transition-colors flex items-center gap-1">
                 <i class="fa-solid fa-pen-to-square"></i> Edit
               </button>
-              <button type="button" onclick="promptDeleteTransaction('${safeId}')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 rounded-xl font-bold text-[11px] transition-colors flex items-center gap-1">
+              <button type="button" onclick="promptDeleteTransaction('${safeId}')" class="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-md font-semibold text-[11px] transition-colors flex items-center gap-1">
                 <i class="fa-solid fa-trash-can"></i> Hapus
               </button>
             </div>
@@ -2913,12 +2945,12 @@ Catatan:
 
       const submitTxBtn = document.getElementById('submitTxBtn');
       if (submitTxBtn) {
-        submitTxBtn.className = "flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold py-4 px-6 rounded-2xl shadow-sm transition-all flex items-center justify-center space-x-2 text-xs";
+        submitTxBtn.className = "flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3.5 px-6 rounded-2xl shadow-sm transition-all flex items-center justify-center space-x-2 text-xs";
         submitTxBtn.innerHTML = `<i class="fa-solid fa-pen-to-square"></i><span id="submitBtnText">Update Transaksi</span>`;
       }
 
       document.getElementById('inputFormCard').scrollIntoView({ behavior: 'smooth' });
-      showToast(`Mode Edit: "${tx.description}"`);
+      showToast(`Mode Edit: Mengedit transaksi "${tx.description}"`);
     }
 
     function promptDeleteTransaction(id) {
@@ -2928,7 +2960,7 @@ Catatan:
       pendingDeleteId = id;
       const msgEl = document.getElementById('confirmModalMsg');
       if (msgEl) {
-        msgEl.textContent = `Hapus transaksi "${tx.description}" (${formatRupiah(tx.amount)})?`;
+        msgEl.textContent = `Apakah Anda yakin ingin menghapus transaksi "${tx.description}" (${formatRupiah(tx.amount)})?`;
       }
       const modal = document.getElementById('confirmModal');
       if (modal) modal.classList.remove('hidden');
@@ -2949,13 +2981,13 @@ Catatan:
       
       renderDashboard();
       renderRecentTransactions();
-      showToast("Menghapus transaksi dari Sheets...");
+      showToast("Menghapus transaksi dari Google Sheets...");
 
       try {
         await syncAllToSheets();
         showToast("Transaksi berhasil dihapus!");
       } catch (err) {
-        showToast("Gagal menyinkronkan: " + err.message);
+        showToast("Gagal menyinkronkan hapus: " + err.message);
       }
     }
 
@@ -2981,7 +3013,7 @@ Catatan:
           body: JSON.stringify({ action: 'syncAll', transactions: transactions })
         });
       } catch (err) {
-        console.error("Gagal sync ke Sheets:", err);
+        console.error("Gagal sinkronisasi data ke Google Sheets Transaksi:", err);
         throw err;
       }
     }
@@ -3007,7 +3039,7 @@ Catatan:
           newJamaahNameFormatted = newJamaahInput ? newJamaahInput.value.trim().toUpperCase() : '';
           
           if (!newJamaahNameFormatted) {
-            showToast("Masukkan nama jamaah baru!");
+            showToast("Mohon masukkan nama jamaah baru!");
             return false;
           }
 
@@ -3028,7 +3060,7 @@ Catatan:
       }
 
       if (!rawDate || !type || !category || !amount || !description) {
-        showToast("Lengkapi semua bidang dengan tanda (*)");
+        showToast("Mohon lengkapi semua bidang yang bertanda bintang (*)");
         return false;
       }
 
@@ -3038,7 +3070,7 @@ Catatan:
 
       const submitBtn = document.getElementById('submitTxBtn');
       submitBtn.disabled = true;
-      submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Menyimpan...</span>`;
+      submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Menyimpan & Mengunggah Data...</span>`;
 
       let proofBase64 = "";
       let proofName = "";
@@ -3086,7 +3118,7 @@ Catatan:
               await sendJamaahToSheets(newJamaahNameFormatted);
             }
 
-            showToast(`Transaksi "${description}" (${formatRupiah(amount)}) diperbarui!`);
+            showToast(`Transaksi "${description}" (${formatRupiah(amount)}) berhasil diperbarui!`);
           }
         } else {
           const newTransaction = {
@@ -3126,7 +3158,7 @@ Catatan:
           }
 
           transactions.push(newTransaction);
-          showToast(`Transaksi "${description}" (${formatRupiah(amount)}) disimpan! ✨`);
+          showToast(`Transaksi "${description}" (${formatRupiah(amount)}) oleh ${currentPetugas} berhasil disimpan!`);
         }
       } catch (err) {
         showToast("Gagal menyimpan ke Google Sheets: " + err.message);
@@ -3148,7 +3180,7 @@ Catatan:
           body: JSON.stringify({ action: 'addJamaah', nama: namaJamaah })
         });
       } catch (e) {
-        console.warn("Gagal kirim jamaah:", e);
+        console.warn("Gagal mengirim nama jamaah baru:", e);
       }
     }
 
@@ -3186,17 +3218,17 @@ Catatan:
 
       const opt = {
         margin:       [0.4, 0.4, 0.4, 0.4],
-        filename:     `Laporan_KasKita_SKB1_${new Date().toISOString().split('T')[0]}.pdf`,
+        filename:     `Laporan_Keuangan_Srengseng_Kalibata_1_${new Date().toISOString().split('T')[0]}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true },
         jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
       };
 
-      showToast("Sedang membuat PDF...");
+      showToast("Sedang memproses dan mengunduh file PDF laporan...");
 
       html2pdf().set(opt).from(element).save().then(() => {
         element.classList.remove('p-4', 'bg-white');
-        showToast("Laporan PDF diunduh!");
+        showToast("Laporan PDF berhasil diunduh!");
       }).catch(() => {
         element.classList.remove('p-4', 'bg-white');
         window.print();
@@ -3226,7 +3258,7 @@ Catatan:
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
       link.setAttribute('href', url);
-      link.setAttribute('download', `Laporan_KasKita_SKB1_${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute('download', `Laporan_Kas_SKB1_${new Date().toISOString().split('T')[0]}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -3267,14 +3299,31 @@ Catatan:
       let summaryCountDebet = 0;
       let summaryCountKredit = 0;
 
+      // Filtered totals for average calculations
+      let shodaqohDebetSum = 0;
+      let shodaqohCount = 0;
+
+      let nonSetoranKreditSum = 0;
+      let nonSetoranKreditCount = 0;
+
       filteredSummary.forEach(t => {
         const amt = parseNumericAmount(t.amount);
         if (t.type === 'debet') {
           summaryDebet += amt;
           summaryCountDebet++;
+
+          if (t.category === 'Shodaqoh') {
+            shodaqohDebetSum += amt;
+            shodaqohCount++;
+          }
         } else {
           summaryKredit += amt;
           summaryCountKredit++;
+
+          if (t.category !== 'Setoran KU') {
+            nonSetoranKreditSum += amt;
+            nonSetoranKreditCount++;
+          }
         }
       });
 
@@ -3307,43 +3356,27 @@ Catatan:
       const kpiExpenseRatio = document.getElementById('kpiExpenseRatio');
       const kpiExpenseRatioBadge = document.getElementById('kpiExpenseRatioBadge');
 
-      if (kpiExpenseRatio) kpiExpenseRatio.textContent = Math.round(expenseRatio) + '%';
+      if (kpiExpenseRatio) kpiExpenseRatio.textContent = expenseRatio.toFixed(1) + '%';
       if (kpiExpenseRatioBadge) {
         if (expenseRatio <= 75) {
           kpiExpenseRatioBadge.textContent = "Sangat Efisien (<75%)";
-          kpiExpenseRatioBadge.className = "text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400";
+          kpiExpenseRatioBadge.className = "text-[11px] font-bold text-emerald-600 dark:text-emerald-400";
         } else if (expenseRatio <= 100) {
           kpiExpenseRatioBadge.textContent = "Cukup Waspada (75-100%)";
-          kpiExpenseRatioBadge.className = "text-[11px] font-extrabold text-amber-500 dark:text-amber-400";
+          kpiExpenseRatioBadge.className = "text-[11px] font-bold text-amber-600 dark:text-amber-400";
         } else {
-          kpiExpenseRatioBadge.textContent = "Defisit (>100%)";
-          kpiExpenseRatioBadge.className = "text-[11px] font-extrabold text-rose-500 dark:text-rose-400";
+          kpiExpenseRatioBadge.textContent = "Defisit / Tinggi (>100%)";
+          kpiExpenseRatioBadge.className = "text-[11px] font-bold text-rose-500 dark:text-rose-400";
         }
       }
 
-      // Calculation 1: Rata-rata Shodaqoh (Hanya dari klasifikasi = "Shodaqoh")
-      let totalShodaqohAmount = 0;
-      let countShodaqoh = 0;
-      filteredSummary.forEach(t => {
-        if (t.category === 'Shodaqoh') {
-          totalShodaqohAmount += parseNumericAmount(t.amount);
-          countShodaqoh++;
-        }
-      });
-      const avgShodaqoh = countShodaqoh > 0 ? Math.round(totalShodaqohAmount / countShodaqoh) : 0;
+      // Rata-rata Shodaqoh: hanya dari klasifikasi "Shodaqoh", dibulatkan tanpa koma
+      const avgShodaqoh = shodaqohCount > 0 ? Math.round(shodaqohDebetSum / shodaqohCount) : 0;
       const kpiAvgShodaqoh = document.getElementById('kpiAvgShodaqoh');
       if (kpiAvgShodaqoh) kpiAvgShodaqoh.textContent = formatRupiah(avgShodaqoh);
 
-      // Calculation 2: Rata-rata Pengeluaran (Kredit selain klasifikasi = "Setoran KU")
-      let totalFilteredExpenseNonSetoran = 0;
-      let countExpenseNonSetoran = 0;
-      filteredSummary.forEach(t => {
-        if (t.type === 'kredit' && t.category !== 'Setoran KU') {
-          totalFilteredExpenseNonSetoran += parseNumericAmount(t.amount);
-          countExpenseNonSetoran++;
-        }
-      });
-      const avgExpense = countExpenseNonSetoran > 0 ? Math.round(totalFilteredExpenseNonSetoran / countExpenseNonSetoran) : 0;
+      // Rata-rata Pengeluaran: kredit selain klasifikasi "Setoran KU", dibulatkan tanpa koma
+      const avgExpense = nonSetoranKreditCount > 0 ? Math.round(nonSetoranKreditSum / nonSetoranKreditCount) : 0;
       const kpiAvgExpense = document.getElementById('kpiAvgExpense');
       if (kpiAvgExpense) kpiAvgExpense.textContent = formatRupiah(avgExpense);
 
