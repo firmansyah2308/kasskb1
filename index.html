@@ -1345,72 +1345,58 @@
 
     function parseISOtoDDMMYYYY(isoStr) {
       if (!isoStr) return '';
+      // Tangani string ISO bertipe ISO-8601 (misal 2026-11-07T00:00:00.000Z atau Date object)
       const str = String(isoStr).trim().split('T')[0];
       const parts = str.split('-');
       if (parts.length === 3) {
         return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[0]}`;
       }
-      return isoStr;
+      return String(isoStr);
     }
 
     function parseDDMMYYYYtoISO(dmyStr) {
       if (!dmyStr) return '';
-      const str = String(dmyStr).trim().split(' ')[0];
-      const parts = str.split('/');
+      const str = String(dmyStr).trim();
+      if (!str) return '';
+      
+      const cleanStr = str.split('T')[0].split(' ')[0];
+      if (cleanStr.includes('-')) {
+        return cleanStr;
+      }
+      const parts = cleanStr.split('/');
       if (parts.length === 3) {
         return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
       }
-      return dmyStr;
+      return str;
     }
 
     function formatDateToIndonesianDay(rawDate) {
       if (!rawDate) return '';
       const normDate = normalizeDateToDDMMYYYY(rawDate);
-      const parts = normDate.split('/');
-      
-      if (parts.length === 3) {
-        const dayNum = parseInt(parts[0], 10);
-        const monthIdx = parseInt(parts[1], 10) - 1;
-        const year = parseInt(parts[2], 10);
-        
-        const dateObj = new Date(year, monthIdx, dayNum, 12, 0, 0);
+      const isoStr = parseDDMMYYYYtoISO(normDate);
+      const parts = isoStr.split('-');
+      if (parts.length !== 3) return String(rawDate);
 
-        if (!isNaN(dateObj.getTime())) {
-          const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-          const months = [
-            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-          ];
-          return `${days[dateObj.getDay()]}, ${dayNum} ${months[monthIdx]} ${year}`;
-        }
-      }
+      const dateObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      if (isNaN(dateObj.getTime())) return String(rawDate);
 
-      return rawDate;
+      const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+      const months = [
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      ];
+
+      return `${days[dateObj.getDay()]}, ${dateObj.getDate()} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
     }
 
     function normalizeDateToDDMMYYYY(rawDate) {
       if (!rawDate) return '';
-      
-      if (rawDate instanceof Date) {
-        const dd = String(rawDate.getDate()).padStart(2, '0');
-        const mm = String(rawDate.getMonth() + 1).padStart(2, '0');
-        const yyyy = rawDate.getFullYear();
-        return `${dd}/${mm}/${yyyy}`;
-      }
-
       const str = String(rawDate).trim();
+      if (!str) return '';
       
-      if (str.includes('/')) {
-        const p = str.split('/');
-        if (p.length === 3) {
-          return `${p[0].padStart(2, '0')}/${p[1].padStart(2, '0')}/${p[2]}`;
-        }
-      }
-
-      if (str.includes('-')) {
+      if (str.includes('T') || str.includes('-')) {
         return parseISOtoDDMMYYYY(str);
       }
-
       return str;
     }
 
@@ -1477,15 +1463,12 @@
       Object.keys(tabLockIds).forEach(tab => {
         const lockIcon = document.getElementById(tabLockIds[tab]);
         const btn = document.getElementById(navBtnIds[tab]);
-
         const isAllowed = allowedTabs.includes(tab);
 
         if (lockIcon) {
-          if (isAllowed) {
-            lockIcon.className = "fa-solid fa-check text-xs text-slate-900 ml-1";
-          } else {
-            lockIcon.className = "fa-solid fa-lock text-xs text-rose-400 dark:text-rose-500 ml-1";
-          }
+          lockIcon.className = isAllowed 
+            ? "fa-solid fa-check text-xs text-slate-900" 
+            : "fa-solid fa-lock text-xs text-rose-400 ml-1";
         }
 
         if (btn) {
@@ -1539,7 +1522,6 @@
           try {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 8000);
-
             const loginApiUrl = `${USER_SHEETS_URL}?action=login&username=${encodeURIComponent(usernameInput)}&user=${encodeURIComponent(usernameInput)}&password=${encodeURIComponent(passwordInput)}`;
 
             const res = await fetch(loginApiUrl, {
@@ -1596,7 +1578,6 @@
           });
 
           updateSidebarLockIcons();
-
           const initialTab = allowedTabs.includes('summary') ? 'summary' : allowedTabs[0];
           showToast(`Selamat datang, ${currentPetugas}!`);
           trySwitchTab(initialTab);
@@ -1760,7 +1741,6 @@
         if (USER_SHEETS_URL) {
           try {
             const updateUrl = `${USER_SHEETS_URL}?action=changePassword&username=${encodeURIComponent(currentAccountUser)}&oldPassword=${encodeURIComponent(oldPass)}&newPassword=${encodeURIComponent(newPass)}`;
-            
             const res = await fetch(updateUrl, { redirect: 'follow' });
             if (res.ok) {
               const resText = await res.text();
@@ -1821,15 +1801,14 @@ Catatan:
     function generateScannableQRCode(text) {
       const container = document.getElementById('qrCodeContainer');
       if (!container) return;
-
       container.innerHTML = '';
 
       try {
         if (typeof QRCode !== 'undefined') {
           qrCodeInstance = new QRCode(container, {
             text: text,
-            width: 256,
-            height: 256,
+            width: 200,
+            height: 200,
             colorDark: "#000000",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.M
@@ -1863,49 +1842,19 @@ Catatan:
         return;
       }
 
-      const tempCanvas = document.createElement('canvas');
-      const ctx = tempCanvas.getContext('2d');
-      const qrImg = new Image();
-
-      qrImg.onload = function() {
-        const padding = 40;
-        tempCanvas.width = qrImg.width + (padding * 2);
-        tempCanvas.height = qrImg.height + (padding * 2);
-
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-
-        ctx.drawImage(qrImg, padding, padding);
-
-        const finalURI = tempCanvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.download = `QR_Rekening_Infaq_SKB1_${new Date().toISOString().split('T')[0]}.png`;
-        link.href = finalURI;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        showToast("Gambar QR Rekening berhasil diunduh!");
-      };
-
-      qrImg.onerror = function() {
-        const link = document.createElement('a');
-        link.download = `QR_Rekening_Infaq_SKB1_${new Date().toISOString().split('T')[0]}.png`;
-        link.href = imgURI;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showToast("Gambar QR Rekening berhasil diunduh!");
-      };
-
-      qrImg.src = imgURI;
+      const link = document.createElement('a');
+      link.download = `QR_Rekening_Infaq_SKB1_${new Date().toISOString().split('T')[0]}.png`;
+      link.href = imgURI;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Gambar QR Rekening berhasil diunduh!");
     }
 
     async function syncAndLoadLatestData() {
       isLoading = true;
       const refreshIcon = document.getElementById('refreshIcon');
       if (refreshIcon) refreshIcon.classList.add('fa-spin');
-      showToast("Menghubungkan & menyinkronkan data Google Sheets...");
 
       try {
         if (TRANSACTION_SHEETS_URL) {
@@ -1938,15 +1887,18 @@ Catatan:
               if (sheetsJamaahArray.length > 0) {
                 jamaahList = Array.from(new Set(
                   sheetsJamaahArray
-                    .map(j => (typeof j === 'string' ? j : (j.nama || j.nama_jamaah || j.Nama || '')).trim().toUpperCase())
+                    .map(j => {
+                      if (!j) return '';
+                      return (typeof j === 'string' ? j : (j.nama || j.nama_jamaah || j.Nama || '')).trim().toUpperCase();
+                    })
                     .filter(Boolean)
                 )).sort();
-              } else {
-                jamaahList = [];
               }
 
               if (txArray.length > 0) {
                 transactions = txArray.map((t, idx) => {
+                  if (!t || typeof t !== 'object') return null;
+
                   const rawDate = t.date || t.Date || t.tanggal || t.Tanggal || t.TGL || t.tgl || '';
                   const rawType = t.type || t.Type || t.tipe || t.Tipe || t.jenis || 'debet';
                   const rawCategory = t.category || t.Category || t.klasifikasi || t.Klasifikasi || t.kategori || 'Lain-lain';
@@ -1966,38 +1918,32 @@ Catatan:
                     petugas_input: String(t.petugas_input || t.Petugas || t.petugas || ''),
                     bukti_url: String(t.bukti_url || t.Bukti || t.bukti || '')
                   };
-                });
+                }).filter(Boolean);
 
                 renderJamaahDropdownOptions();
                 showToast("Sinkronisasi transaksi berhasil!");
-              } else {
-                showToast("Berhasil terhubung, namun belum ada transaksi.");
               }
 
               if (sheetsInfoArray.length > 0) {
-                informasiList = sheetsInfoArray.map((inf, i) => ({
-                  id: String(inf.id || inf.ID || 'info-' + (i + 1)),
-                  no: inf.no || inf.No || (i + 1),
-                  informasi: String(inf.informasi || inf.Info || inf.Informasi || inf.isi || inf.agenda || ''),
-                  tanggal: normalizeDateToDDMMYYYY(inf.tanggal || inf.Tanggal || inf.date || inf.Date || '')
-                }));
+                informasiList = sheetsInfoArray.map((inf, i) => {
+                  if (!inf) return null;
+                  return {
+                    id: String(inf.id || inf.ID || 'info-' + (i + 1)),
+                    no: inf.no || inf.No || (i + 1),
+                    informasi: String(inf.informasi || inf.Info || inf.Informasi || inf.isi || inf.agenda || ''),
+                    tanggal: normalizeDateToDDMMYYYY(inf.tanggal || inf.Tanggal || inf.date || inf.Date || '')
+                  };
+                }).filter(Boolean);
               }
-            } else {
-              showToast("Format respons Google Sheets tidak valid.");
             }
-          } else {
-            showToast("Gagal mengambil data dari Google Sheets.");
           }
         }
       } catch (err) {
-        console.warn("Koneksi Google Sheets Transaksi gagal:", err);
+        console.warn("Koneksi Spreadsheet gagal:", err);
         showToast("Terjadi kesalahan koneksi saat me-refresh data.");
       } finally {
         isLoading = false;
         if (refreshIcon) refreshIcon.classList.remove('fa-spin');
-        
-        setMonthFilter('all', 'summary');
-        setMonthFilter('all', 'bk');
         renderDashboard();
         renderRecentTransactions();
         renderInformasiList();
@@ -2012,9 +1958,9 @@ Catatan:
 
       if (informasiList.length === 0) {
         container.innerHTML = `
-          <div class="p-5 text-center text-slate-400 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-medium">
-            <i class="fa-solid fa-circle-info text-2xl mb-1 block text-slate-300 dark:text-slate-600"></i>
-            Belum ada informasi/kegiatan tambahan yang dimasukkan.
+          <div class="p-5 text-center text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-800 text-xs font-medium">
+            <i class="fa-solid fa-circle-info text-2xl mb-1 block"></i>
+            Belum ada informasi/kegiatan tambahan.
           </div>
         `;
         return;
@@ -2022,15 +1968,14 @@ Catatan:
 
       informasiList.forEach((item, idx) => {
         const card = document.createElement('div');
-        card.className = "bg-slate-50 dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-all hover:border-teal-400/40";
-        
+        card.className = "bg-slate-50 dark:bg-[#0F172A] border border-slate-100 dark:border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-all";
         const safeId = String(item.id).replace(/'/g, "\\'");
         const displayDate = formatDateToIndonesianDay(item.tanggal);
 
         card.innerHTML = `
           <div class="space-y-1.5 flex-1">
             <div class="flex items-center gap-2">
-              <span class="w-5 h-5 rounded-full bg-teal-100 text-teal-800 font-black text-[10px] flex items-center justify-center shrink-0">
+              <span class="w-5 h-5 rounded-full bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300 font-black text-[10px] flex items-center justify-center shrink-0">
                 ${idx + 1}
               </span>
               <span class="px-2.5 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 font-bold border border-teal-200/60 font-mono text-[11px]">
@@ -2043,10 +1988,10 @@ Catatan:
           </div>
 
           <div class="flex items-center space-x-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200 dark:border-slate-800">
-            <button type="button" onclick="openEditInfoModal('${safeId}')" class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl font-bold text-xs transition-all flex items-center gap-1">
+            <button type="button" onclick="openEditInfoModal('${safeId}')" class="px-3 py-1.5 bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 rounded-xl font-bold text-xs transition-all flex items-center gap-1">
               <i class="fa-solid fa-pen-to-square"></i> Edit
             </button>
-            <button type="button" onclick="deleteInformasi('${safeId}')" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl font-bold text-xs transition-all flex items-center gap-1">
+            <button type="button" onclick="deleteInformasi('${safeId}')" class="px-3 py-1.5 bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 rounded-xl font-bold text-xs transition-all flex items-center gap-1">
               <i class="fa-solid fa-trash-can"></i> Hapus
             </button>
           </div>
@@ -2072,7 +2017,6 @@ Catatan:
 
       editingInfoId = item.id;
       document.getElementById('infoModalTitle').textContent = "Edit Informasi";
-      
       const isoDate = parseDDMMYYYYtoISO(item.tanggal) || item.tanggal;
       document.getElementById('infoTanggalInput').value = isoDate;
       document.getElementById('infoTextarea').value = item.informasi;
@@ -2116,13 +2060,13 @@ Catatan:
 
       renderInformasiList();
       closeInfoModal();
-      showToast("Menyimpan informasi ke Spreadsheet...");
+      showToast("Menyimpan informasi...");
 
       try {
         await syncInformasiToSheets();
-        showToast("InformasiKU berhasil disimpan!");
+        showToast("Informasi berhasil disimpan!");
       } catch (err) {
-        showToast("Informasi tersimpan lokal.");
+        showToast("Informasi tersimpan secara lokal.");
       }
       return false;
     }
@@ -2137,9 +2081,9 @@ Catatan:
 
       try {
         await syncInformasiToSheets();
-        showToast("InformasiKU berhasil dihapus!");
+        showToast("Informasi berhasil dihapus!");
       } catch (err) {
-        showToast("Informasi dihapus.");
+        showToast("Informasi dihapus secara lokal.");
       }
     }
 
@@ -2156,7 +2100,7 @@ Catatan:
           })
         });
       } catch (err) {
-        console.error("Gagal sinkronisasi InformasiKU:", err);
+        console.error("Gagal sinkronisasi Informasi:", err);
       }
     }
 
@@ -2168,17 +2112,11 @@ Catatan:
       container.innerHTML = '';
       ALL_CATEGORIES.forEach(cat => {
         const checkboxClass = scope === 'bk' ? 'bk-category-checkbox' : 'category-checkbox';
-        
-        let labelClass = "font-medium";
-        if (cat.startsWith('KH ')) {
-          labelClass = "font-bold text-teal-700 dark:text-teal-300";
-        }
-
         const label = document.createElement('label');
-        label.className = "flex items-center space-x-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-700/50 p-1.5 rounded-lg cursor-pointer";
+        label.className = "flex items-center space-x-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-800 p-1.5 rounded-lg cursor-pointer";
         label.innerHTML = `
           <input type="checkbox" value="${cat}" class="${checkboxClass} rounded text-teal-500 focus:ring-teal-400 border-slate-300 dark:border-slate-600" onchange="onCategoryCheckboxChange('${scope}')" checked>
-          <span class="${labelClass}">${cat}</span>
+          <span class="font-semibold text-slate-700 dark:text-slate-300">${cat}</span>
         `;
         container.appendChild(label);
       });
@@ -2205,7 +2143,6 @@ Catatan:
       if (!selectEl) return;
 
       selectEl.innerHTML = '';
-
       const defaultOpt = document.createElement('option');
       defaultOpt.value = '';
       defaultOpt.disabled = true;
@@ -2551,7 +2488,7 @@ Catatan:
           <tr>
             <td colspan="7" class="py-8 text-center text-slate-400 dark:text-slate-500 font-medium">
               <i class="fa-solid fa-folder-open text-3xl mb-2 block"></i>
-              Tidak ada data transaksi yang sesuai dengan filter.
+              Tidak ada data transaksi.
             </td>
           </tr>
         `;
@@ -2566,18 +2503,10 @@ Catatan:
 
           const row = document.createElement('tr');
           row.className = "hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors";
-          
-          let catBadgeClass = "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300";
-          if (t.category === 'Shodaqoh') catBadgeClass = "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300";
-          else if (t.category === 'Setoran KU') catBadgeClass = "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300";
-          else if (t.category === 'Konsumsi') catBadgeClass = "bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300";
-          else if (t.category === 'Perlengkapan') catBadgeClass = "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300";
-          else if (t.category === 'Operasional') catBadgeClass = "bg-teal-100 text-teal-800 dark:bg-teal-900/50 dark:text-teal-300";
-          else if (t.category === 'Pembangunan') catBadgeClass = "bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300";
 
           let proofHtml = '-';
           if (t.bukti_url && t.bukti_url.startsWith('http')) {
-            proofHtml = `<a href="${t.bukti_url}" target="_blank" rel="noopener" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-600 hover:bg-purple-100 dark:bg-purple-900/40 dark:text-purple-300" title="Buka Bukti">
+            proofHtml = `<a href="${t.bukti_url}" target="_blank" rel="noopener" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300">
               <i class="fa-solid fa-paperclip mr-1"></i> Bukti
             </a>`;
           }
@@ -2587,7 +2516,7 @@ Catatan:
           row.innerHTML = `
             <td class="py-3 px-4 font-mono text-xs font-semibold whitespace-nowrap text-slate-600 dark:text-slate-300">${t.date}</td>
             <td class="py-3 px-4 whitespace-nowrap">
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${catBadgeClass}">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                 ${t.category}
               </span>
             </td>
@@ -2786,14 +2715,13 @@ Catatan:
     function renderRecentTransactions() {
       const tbody = document.getElementById('recentTxTableBody');
       if (!tbody) return;
-
       tbody.innerHTML = '';
 
       if (transactions.length === 0) {
         tbody.innerHTML = `
           <tr>
             <td colspan="6" class="py-6 text-center text-slate-400 dark:text-slate-500 font-medium">
-              Belum ada data transaksi yang tercatat.
+              Belum ada data transaksi.
             </td>
           </tr>
         `;
@@ -2804,13 +2732,8 @@ Catatan:
 
       recentList.forEach((t) => {
         const isDebet = t.type === 'debet';
-        let catBadgeClass = "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300";
-        if (t.category === 'Shodaqoh') catBadgeClass = "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300";
-        else if (t.category === 'Setoran KU') catBadgeClass = "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300";
-
         const row = document.createElement('tr');
         row.className = "hover:bg-slate-100/60 dark:hover:bg-slate-800/50 transition-colors";
-
         const safeId = String(t.id).replace(/'/g, "\\'");
 
         row.innerHTML = `
@@ -2818,7 +2741,7 @@ Catatan:
             ${t.date}
           </td>
           <td class="py-2.5 px-3 whitespace-nowrap">
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${catBadgeClass}">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
               ${t.category}
             </span>
           </td>
@@ -2833,10 +2756,10 @@ Catatan:
           </td>
           <td class="py-2.5 px-3 text-center whitespace-nowrap">
             <div class="flex items-center justify-center space-x-1.5">
-              <button type="button" onclick="editTransaction('${safeId}')" class="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-md font-semibold text-[11px] transition-colors flex items-center gap-1">
+              <button type="button" onclick="editTransaction('${safeId}')" class="px-2 py-1 bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 rounded-md font-semibold text-[11px] transition-colors flex items-center gap-1">
                 <i class="fa-solid fa-pen-to-square"></i> Edit
               </button>
-              <button type="button" onclick="promptDeleteTransaction('${safeId}')" class="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-md font-semibold text-[11px] transition-colors flex items-center gap-1">
+              <button type="button" onclick="promptDeleteTransaction('${safeId}')" class="px-2 py-1 bg-rose-50 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 rounded-md font-semibold text-[11px] transition-colors flex items-center gap-1">
                 <i class="fa-solid fa-trash-can"></i> Hapus
               </button>
             </div>
@@ -2851,7 +2774,6 @@ Catatan:
       if (!tx) return;
 
       editingTxId = tx.id;
-
       document.getElementById('inputDate').value = parseDDMMYYYYtoISO(tx.date);
       document.getElementById('inputType').value = tx.type;
       document.getElementById('inputCategory').value = tx.category;
@@ -2873,12 +2795,12 @@ Catatan:
 
       const submitTxBtn = document.getElementById('submitTxBtn');
       if (submitTxBtn) {
-        submitTxBtn.className = "flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3.5 px-6 rounded-2xl shadow-sm transition-all flex items-center justify-center space-x-2 text-xs";
+        submitTxBtn.className = "flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold py-4 px-6 rounded-2xl shadow-sm transition-all flex items-center justify-center space-x-2 text-xs";
         submitTxBtn.innerHTML = `<i class="fa-solid fa-pen-to-square"></i><span id="submitBtnText">Update Transaksi</span>`;
       }
 
       document.getElementById('inputFormCard').scrollIntoView({ behavior: 'smooth' });
-      showToast(`Mode Edit: Mengedit transaksi "${tx.description}"`);
+      showToast(`Mode Edit: "${tx.description}"`);
     }
 
     function promptDeleteTransaction(id) {
@@ -2906,16 +2828,15 @@ Catatan:
       closeConfirmModal();
 
       transactions = transactions.filter(t => String(t.id) !== String(targetId));
-      
       renderDashboard();
       renderRecentTransactions();
-      showToast("Menghapus transaksi dari Google Sheets...");
+      showToast("Menghapus transaksi...");
 
       try {
         await syncAllToSheets();
         showToast("Transaksi berhasil dihapus!");
       } catch (err) {
-        showToast("Gagal menyinkronkan hapus: " + err.message);
+        showToast("Gagal menyinkronkan: " + err.message);
       }
     }
 
@@ -2926,7 +2847,7 @@ Catatan:
       const submitTxBtn = document.getElementById('submitTxBtn');
       if (submitTxBtn) {
         submitTxBtn.disabled = false;
-        submitTxBtn.className = "flex-1 bg-slate-900 hover:bg-slate-800 text-white dark:bg-teal-400 dark:text-slate-950 font-extrabold py-4 px-6 rounded-2xl shadow-pastel-mint active:scale-[0.98] transition-all flex items-center justify-center space-x-2 text-xs";
+        submitTxBtn.className = "flex-1 bg-slate-900 hover:bg-slate-800 text-white dark:bg-teal-400 dark:text-slate-950 font-extrabold py-4 px-6 rounded-2xl shadow-pastel-mint transition-all flex items-center justify-center space-x-2 text-xs";
         submitTxBtn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i><span id="submitBtnText">Simpan Transaksi & Upload Bukti</span>`;
       }
     }
@@ -2988,7 +2909,7 @@ Catatan:
       }
 
       if (!rawDate || !type || !category || !amount || !description) {
-        showToast("Mohon lengkapi semua bidang yang bertanda bintang (*)");
+        showToast("Mohon lengkapi bidang yang bertanda bintang (*)");
         return false;
       }
 
@@ -2998,7 +2919,7 @@ Catatan:
 
       const submitBtn = document.getElementById('submitTxBtn');
       submitBtn.disabled = true;
-      submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Menyimpan & Mengunggah Data...</span>`;
+      submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Menyimpan...</span>`;
 
       let proofBase64 = "";
       let proofName = "";
@@ -3039,14 +2960,13 @@ Catatan:
             }
 
             transactions[txIndex] = updatedTx;
-
             await syncAllToSheets();
 
             if (isNewJamaahAdded && newJamaahNameFormatted) {
               await sendJamaahToSheets(newJamaahNameFormatted);
             }
 
-            showToast(`Transaksi "${description}" (${formatRupiah(amount)}) berhasil diperbarui!`);
+            showToast(`Transaksi "${description}" berhasil diperbarui!`);
           }
         } else {
           const newTransaction = {
@@ -3086,7 +3006,7 @@ Catatan:
           }
 
           transactions.push(newTransaction);
-          showToast(`Transaksi "${description}" (${formatRupiah(amount)}) oleh ${currentPetugas} berhasil disimpan!`);
+          showToast(`Transaksi "${description}" berhasil disimpan!`);
         }
       } catch (err) {
         showToast("Gagal menyimpan ke Google Sheets: " + err.message);
@@ -3152,7 +3072,7 @@ Catatan:
         jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
       };
 
-      showToast("Sedang memproses dan mengunduh file PDF laporan...");
+      showToast("Memproses PDF laporan...");
 
       html2pdf().set(opt).from(element).save().then(() => {
         element.classList.remove('p-4', 'bg-white');
@@ -3170,7 +3090,7 @@ Catatan:
         return;
       }
 
-      let csv = "ID,Tanggal,Tipe,Klasifikasi,Direktori,Uraian,Keterangan,Debet (Rp),Kredit (Rp),Timestamp Input,Petugas Input,URL Bukti\n";
+      let csv = "ID,Tanggal,Tipe,Klasifikasi,Uraian,Keterangan,Debet (Rp),Kredit (Rp),Timestamp Input,Petugas Input,URL Bukti\n";
       
       filtered.forEach(t => {
         const amt = parseNumericAmount(t.amount);
@@ -3179,7 +3099,7 @@ Catatan:
         const descClean = `"${(t.description || '').replace(/"/g, '""')}"`;
         const notesClean = `"${(t.notes || '').replace(/"/g, '""')}"`;
         
-        csv += `${t.id},${t.date},${t.type},${t.category},,${descClean},${notesClean},${debet},${kredit},"${t.timestamp_input || ''}","${t.petugas_input || ''}","${t.bukti_url || ''}"\n`;
+        csv += `${t.id},${t.date},${t.type},${t.category},${descClean},${notesClean},${debet},${kredit},"${t.timestamp_input || ''}","${t.petugas_input || ''}","${t.bukti_url || ''}"\n`;
       });
 
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -3227,30 +3147,14 @@ Catatan:
       let summaryCountDebet = 0;
       let summaryCountKredit = 0;
 
-      let shodaqohDebetSum = 0;
-      let shodaqohCount = 0;
-
-      let nonSetoranKreditSum = 0;
-      let nonSetoranKreditCount = 0;
-
       filteredSummary.forEach(t => {
         const amt = parseNumericAmount(t.amount);
         if (t.type === 'debet') {
           summaryDebet += amt;
           summaryCountDebet++;
-
-          if (t.category === 'Shodaqoh') {
-            shodaqohDebetSum += amt;
-            shodaqohCount++;
-          }
         } else {
           summaryKredit += amt;
           summaryCountKredit++;
-
-          if (t.category !== 'Setoran KU') {
-            nonSetoranKreditSum += amt;
-            nonSetoranKreditCount++;
-          }
         }
       });
 
@@ -3297,11 +3201,15 @@ Catatan:
         }
       }
 
-      const avgShodaqoh = shodaqohCount > 0 ? Math.round(shodaqohDebetSum / shodaqohCount) : 0;
+      const shodaqohTxList = filteredSummary.filter(t => t.type === 'debet' && t.category === 'Shodaqoh');
+      const totalShodaqohAmt = shodaqohTxList.reduce((acc, t) => acc + parseNumericAmount(t.amount), 0);
+      const avgShodaqoh = shodaqohTxList.length > 0 ? Math.round(totalShodaqohAmt / shodaqohTxList.length) : 0;
       const kpiAvgShodaqoh = document.getElementById('kpiAvgShodaqoh');
       if (kpiAvgShodaqoh) kpiAvgShodaqoh.textContent = formatRupiah(avgShodaqoh);
 
-      const avgExpense = nonSetoranKreditCount > 0 ? Math.round(nonSetoranKreditSum / nonSetoranKreditCount) : 0;
+      const nonSetoranExpenseTxList = filteredSummary.filter(t => t.type === 'kredit' && t.category !== 'Setoran KU');
+      const totalNonSetoranExpenseAmt = nonSetoranExpenseTxList.reduce((acc, t) => acc + parseNumericAmount(t.amount), 0);
+      const avgExpense = nonSetoranExpenseTxList.length > 0 ? Math.round(totalNonSetoranExpenseAmt / nonSetoranExpenseTxList.length) : 0;
       const kpiAvgExpense = document.getElementById('kpiAvgExpense');
       if (kpiAvgExpense) kpiAvgExpense.textContent = formatRupiah(avgExpense);
 
